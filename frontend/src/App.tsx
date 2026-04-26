@@ -19,13 +19,11 @@ function App() {
             style={{ paddingTop: 'calc(var(--safe-area-top) + 2rem)', paddingBottom: 'calc(var(--safe-area-bottom) + 6rem)' }}>
         {currentTab === 'home' && (
           <div className="flex flex-col items-center justify-center flex-1 text-center animate-in fade-in zoom-in duration-700">
-            <div className="w-full max-w-[300px] mb-8 relative aspect-square">
-              <div className="absolute inset-0 bg-primary/20 rounded-full blur-3xl animate-pulse"></div>
-              <img 
-                src="/hero.png" 
-                alt="ThayNails" 
-                className="relative z-10 w-full h-full object-contain mask-image-linear-gradient"
-              />
+            <div className="w-28 h-28 mb-10 relative">
+              <div className="absolute inset-0 bg-primary/40 rounded-full blur-2xl animate-pulse"></div>
+              <div className="relative w-full h-full glass-panel flex items-center justify-center text-primary border-primary/20">
+                <Sparkles size={48} className="drop-shadow-[0_0_15px_rgba(0,240,255,0.8)]" />
+              </div>
             </div>
             <h1 className="text-5xl font-extrabold mb-3 tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-white/60">
               ThayNails
