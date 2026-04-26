@@ -79,7 +79,7 @@ export default function Editor({ onBack }: { onBack: () => void }) {
                 <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl animate-ping"></div>
                 <Loader2 className="w-16 h-16 text-primary animate-spin mb-6 relative z-10" />
               </div>
-              <p className="text-primary font-bold text-xl tracking-widest animate-pulse">PROCESSANDO IA</p>
+              <p className="text-primary font-bold text-xl tracking-widest animate-pulse">PROCESSANDO SIMULAÇÃO</p>
             </motion.div>
           )}
         </AnimatePresence>
@@ -164,7 +164,7 @@ export default function Editor({ onBack }: { onBack: () => void }) {
                   className="w-full btn-primary py-4 text-lg font-bold flex items-center justify-center gap-3 bg-gradient-to-r from-primary to-primary-light"
                 >
                   <Palette size={24} />
-                  Colorir com IA
+                  Aplicar Cor Virtual
                 </button>
               </div>
             </motion.div>
