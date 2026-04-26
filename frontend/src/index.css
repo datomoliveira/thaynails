@@ -1,0 +1,38 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-background text-white font-sans antialiased overflow-x-hidden;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-glass rounded-2xl;
+  }
+  
+  .glass-button {
+    @apply relative overflow-hidden bg-white/5 backdrop-blur-md border border-white/10 rounded-xl transition-all duration-300 hover:bg-white/10 active:scale-95;
+  }
+
+  .btn-primary {
+    @apply bg-primary hover:bg-primary-light text-white font-medium py-3 px-6 rounded-xl transition-all duration-300 shadow-neon-blue active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply bg-accent hover:bg-accent-light text-white font-medium py-3 px-6 rounded-xl transition-all duration-300 shadow-neon-pink active:scale-95;
+  }
+  
+  /* Liquid glass gradient animation */
+  .liquid-gradient {
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.18);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  }
+}
