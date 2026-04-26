@@ -8,13 +8,13 @@ const SHAPES = [
   { id: 'square', name: 'Quadrada', icon: '⬛' },
 ];
 
-const COLORS = [
-  { id: 'red', hex: '#E60000', name: 'Vermelho Clássico' },
-  { id: 'pink', hex: '#FF2A7A', name: 'Rosa Thay' },
-  { id: 'blue', hex: '#0066FF', name: 'Azul Vibrante' },
-  { id: 'black', hex: '#1A1A1A', name: 'Preto Intenso' },
-  { id: 'nude', hex: '#E5C5B5', name: 'Nude Chic' },
-  { id: 'white', hex: '#F0F0F0', name: 'Branco Paz' },
+  const COLORS = [
+  { id: 'red', hex: '#FF0000', name: 'Vermelho' },
+  { id: 'pink', hex: '#FF2A7A', name: 'Rosa' },
+  { id: 'blue', hex: '#00F0FF', name: 'Azul Thay' }, // Updated to Thay's favorite
+  { id: 'black', hex: '#000000', name: 'Preto' },
+  { id: 'nude', hex: '#D2B48C', name: 'Nude' },
+  { id: 'white', hex: '#FFFFFF', name: 'Branco' },
 ];
 
 export default function Editor({ onBack }: { onBack: () => void }) {
@@ -33,9 +33,7 @@ export default function Editor({ onBack }: { onBack: () => void }) {
     
     setIsProcessing(true);
     
-    // Simular chamada ao Cloudflare Worker
     try {
-      // Em um cenário real, aqui seria o fetch para a API
       await new Promise(resolve => setTimeout(resolve, 2500));
       setStep('result');
     } catch (e) {
@@ -46,40 +44,42 @@ export default function Editor({ onBack }: { onBack: () => void }) {
   };
 
   return (
-    <div className="flex flex-col w-full h-full animate-in fade-in zoom-in-95 duration-300">
+    <div className="flex flex-col w-full h-full animate-in fade-in slide-in-from-right-4 duration-500">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <button onClick={onBack} className="p-2 rounded-full glass-button text-white/70">
-          <ArrowLeft size={20} />
+      <div className="flex items-center justify-between mb-8">
+        <button onClick={onBack} className="w-11 h-11 rounded-full glass-button flex items-center justify-center text-white active:scale-90 transition-transform">
+          <ArrowLeft size={24} />
         </button>
-        <h2 className="text-xl font-semibold">
-          {step === 'shape' && 'Escolha o Formato'}
-          {step === 'color' && 'Escolha a Cor'}
-          {step === 'result' && 'Resultado'}
+        <h2 className="text-2xl font-bold tracking-tight">
+          {step === 'shape' && 'Formato'}
+          {step === 'color' && 'Cor'}
+          {step === 'result' && 'Pronto!'}
         </h2>
-        <div className="w-9"></div> {/* Spacer */}
+        <div className="w-11"></div>
       </div>
 
       {/* Image Preview Area */}
-      <div className="w-full aspect-[3/4] glass-panel mb-6 relative overflow-hidden flex items-center justify-center">
-        {/* Mockup da imagem da mão */}
+      <div className="w-full aspect-[3/4] glass-panel mb-8 relative overflow-hidden flex items-center justify-center border-white/5 group">
         <img 
           src="https://images.unsplash.com/photo-1519014816548-bf5fe059e98b?q=80&w=600&auto=format&fit=crop" 
           alt="Mão" 
-          className="w-full h-full object-cover opacity-80"
+          className="w-full h-full object-cover opacity-90 transition-transform duration-700 group-hover:scale-105"
         />
         
-        {/* Overlay de carregamento */}
+        {/* Loading Overlay */}
         <AnimatePresence>
           {isProcessing && (
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center z-10"
+              className="absolute inset-0 bg-background/90 backdrop-blur-md flex flex-col items-center justify-center z-10"
             >
-              <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" />
-              <p className="text-white/80 font-medium">IA trabalhando...</p>
+              <div className="relative">
+                <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl animate-ping"></div>
+                <Loader2 className="w-16 h-16 text-primary animate-spin mb-6 relative z-10" />
+              </div>
+              <p className="text-primary font-bold text-xl tracking-widest animate-pulse">PROCESSANDO IA</p>
             </motion.div>
           )}
         </AnimatePresence>
@@ -89,77 +89,81 @@ export default function Editor({ onBack }: { onBack: () => void }) {
       <div className="flex-1 flex flex-col">
         <AnimatePresence mode="wait">
           
-          {/* Step 1: Shape Selection */}
           {step === 'shape' && (
             <motion.div 
               key="shape-step"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
               className="flex flex-col flex-1"
             >
-              <div className="grid grid-cols-3 gap-3 mb-6">
+              <div className="grid grid-cols-3 gap-4 mb-8">
                 {SHAPES.map(shape => (
                   <button
                     key={shape.id}
                     onClick={() => setSelectedShape(shape.id)}
-                    className={`flex flex-col items-center justify-center p-4 rounded-2xl border transition-all duration-300 ${
+                    className={`flex flex-col items-center justify-center py-6 rounded-3xl border-2 transition-all duration-300 active:scale-95 ${
                       selectedShape === shape.id 
                         ? 'bg-primary/20 border-primary text-white shadow-neon-blue' 
-                        : 'glass-panel border-white/5 text-white/60 hover:bg-white/10'
+                        : 'glass-panel border-white/5 text-white/40 hover:bg-white/5'
                     }`}
                   >
-                    <span className="text-2xl mb-2">{shape.icon}</span>
-                    <span className="text-xs font-medium">{shape.name}</span>
+                    <span className="text-3xl mb-2">{shape.icon}</span>
+                    <span className="text-xs font-bold uppercase tracking-wider">{shape.name}</span>
                   </button>
                 ))}
               </div>
               
-              <div className="mt-auto pt-4">
+              <div className="mt-auto">
                 <button 
                   onClick={handleApplyShape}
                   disabled={!selectedShape}
-                  className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full btn-primary py-4 text-lg font-bold flex items-center justify-center gap-3"
                 >
-                  <Sparkles size={20} />
-                  Aplicar Formato
+                  <Sparkles size={24} />
+                  Próximo Passo
                 </button>
               </div>
             </motion.div>
           )}
 
-          {/* Step 2: Color Selection */}
           {step === 'color' && (
             <motion.div 
               key="color-step"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
               className="flex flex-col flex-1"
             >
-              <div className="flex flex-wrap gap-4 justify-center mb-6">
+              <div className="grid grid-cols-3 gap-5 mb-8">
                 {COLORS.map(color => (
                   <button
                     key={color.id}
                     onClick={() => setSelectedColor(color.id)}
-                    className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 relative group`}
+                    className={`h-20 rounded-3xl flex items-center justify-center transition-all duration-300 relative active:scale-90 border-2 ${
+                      selectedColor === color.id ? 'border-white scale-105 z-10' : 'border-transparent'
+                    }`}
                     style={{ backgroundColor: color.hex }}
                   >
                     {selectedColor === color.id && (
-                      <div className="absolute inset-[-6px] rounded-full border-2 border-white/50 animate-pulse"></div>
+                      <div className="absolute inset-[-8px] rounded-[2rem] border-2 border-white/30"></div>
                     )}
-                    {selectedColor === color.id && <Check size={20} color={color.hex === '#F0F0F0' ? '#000' : '#FFF'} />}
+                    <span className={`text-[10px] font-bold uppercase tracking-tighter ${
+                      ['white', 'nude'].includes(color.id) ? 'text-black/60' : 'text-white/60'
+                    }`}>
+                      {color.name}
+                    </span>
                   </button>
                 ))}
               </div>
               
-              <div className="mt-auto pt-4">
+              <div className="mt-auto">
                 <button 
                   onClick={handleApplyColor}
                   disabled={!selectedColor || isProcessing}
-                  className="w-full btn-secondary disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full btn-primary py-4 text-lg font-bold flex items-center justify-center gap-3 bg-gradient-to-r from-primary to-primary-light"
                 >
-                  <Palette size={20} />
+                  <Palette size={24} />
                   Colorir com IA
                 </button>
               </div>
