@@ -39,15 +39,17 @@ export default {
         }
 
         // 1. Upload image to Supabase Storage
-        const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
+        const supabaseUrl = env.SUPABASE_URL.trim().replace(/\/$/, ""); // Remove trailing slash
+        const supabase = createClient(supabaseUrl, env.SUPABASE_SERVICE_ROLE_KEY);
         
-        // Sanitize filename to avoid "Invalid path" errors
+        // Sanitize filename and use ArrayBuffer for stability
         const fileExt = imageFile.name.split('.').pop() || 'jpg';
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const fileName = `${Date.now()}.${fileExt}`;
+        const imageBuffer = await imageFile.arrayBuffer();
         
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('nail-images')
-          .upload(fileName, imageFile, {
+          .upload(fileName, imageBuffer, {
             contentType: imageFile.type,
             upsert: false
           });
