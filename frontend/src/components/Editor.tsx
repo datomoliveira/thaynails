@@ -166,7 +166,7 @@ export default function Editor({ imageFile, onBack }: { imageFile: File | null, 
                   className="w-full btn-primary py-4 text-lg font-bold flex items-center justify-center gap-3"
                 >
                   <Sparkles size={24} />
-                  Próximo Passo
+                  Continuar para Cores
                 </button>
               </div>
             </motion.div>
@@ -209,7 +209,7 @@ export default function Editor({ imageFile, onBack }: { imageFile: File | null, 
                   className="w-full btn-primary py-4 text-lg font-bold flex items-center justify-center gap-3 bg-gradient-to-r from-primary to-primary-light"
                 >
                   <Palette size={24} />
-                  Aplicar Cor Virtual
+                  Analisar e Pintar Unhas
                 </button>
               </div>
             </motion.div>
