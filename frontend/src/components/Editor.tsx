@@ -42,8 +42,8 @@ export default function Editor({ imageFile, onBack }: { imageFile: File | null, 
       formData.append('shape', selectedShape);
       formData.append('color', selectedColor);
 
-      // Replace with your actual Worker URL after deployment
-      const response = await fetch('https://thaynails-worker.datomoliveira.workers.dev/api/simulate', {
+      const WORKER_URL = import.meta.env.VITE_WORKER_URL || 'http://localhost:8787';
+      const response = await fetch(`${WORKER_URL}/api/simulate`, {
         method: 'POST',
         body: formData,
       });
