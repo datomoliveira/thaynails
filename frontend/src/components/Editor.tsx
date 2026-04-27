@@ -42,7 +42,11 @@ export default function Editor({ imageFile, onBack }: { imageFile: File | null, 
       formData.append('shape', selectedShape);
       formData.append('color', selectedColor);
 
-      const WORKER_URL = import.meta.env.VITE_WORKER_URL || 'http://localhost:8787';
+      let WORKER_URL = import.meta.env.VITE_WORKER_URL || 'http://localhost:8787';
+      if (WORKER_URL && !WORKER_URL.startsWith('http')) {
+        WORKER_URL = `https://${WORKER_URL}`;
+      }
+      
       const response = await fetch(`${WORKER_URL}/api/simulate`, {
         method: 'POST',
         body: formData,
