@@ -16,7 +16,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen relative flex flex-col items-center bg-background select-none touch-none">
+    <div className="min-h-screen relative flex flex-col items-center bg-background">
       
       {/* Dynamic Background */}
       <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
@@ -25,8 +25,8 @@ function App() {
       </div>
 
       {/* Main Content Area */}
-      <main className="w-full max-w-md relative z-10 flex-1 px-5 flex flex-col" 
-            style={{ paddingTop: 'calc(var(--safe-area-top) + 2rem)', paddingBottom: 'calc(var(--safe-area-bottom) + 6rem)' }}>
+      <main className="w-full max-w-md relative z-10 flex-1 px-5 flex flex-col overflow-y-auto overflow-x-hidden scrollbar-hide" 
+            style={{ paddingTop: 'calc(var(--safe-area-top) + 2rem)', paddingBottom: 'calc(var(--safe-area-bottom) + 8rem)' }}>
         {currentTab === 'home' && (
           <div className="flex flex-col items-center justify-center flex-1 text-center animate-in fade-in zoom-in duration-700">
             <div className="w-28 h-28 mb-10 relative">

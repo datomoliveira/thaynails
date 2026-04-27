@@ -81,7 +81,7 @@ export default function Editor({ imageFile, onBack }: { imageFile: File | null, 
       </div>
 
       {/* Image Preview Area */}
-      <div className="w-full aspect-[3/4] glass-panel mb-8 relative overflow-hidden flex items-center justify-center border-white/5 group">
+      <div className="w-full h-[40vh] min-h-[300px] glass-panel mb-6 relative overflow-hidden flex items-center justify-center border-white/5 group">
         <img 
           src={simulationResult?.imageUrl || previewUrl || "https://images.unsplash.com/photo-1519014816548-bf5fe059e98b?q=80&w=600&auto=format&fit=crop"} 
           alt="Preview" 
