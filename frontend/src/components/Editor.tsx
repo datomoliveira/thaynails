@@ -231,9 +231,9 @@ export default function Editor({ imageFile, onBack }: { imageFile: File | null, 
               className="flex flex-col flex-1"
             >
               <div className="bg-primary/10 border border-primary/30 rounded-2xl p-5 mb-6 overflow-y-auto max-h-[150px]">
-                <h3 className="text-primary font-bold mb-2">Simulação Concluída</h3>
+                <h3 className="text-primary font-bold mb-2">Simulação Concluída ✨</h3>
                 <p className="text-white/80 text-sm italic leading-relaxed">
-                  {simulationResult?.analysis || "Sua unha foi simulada com sucesso."}
+                  {simulationResult?.analysis || "Sua unha foi simulada com sucesso absoluta!"}
                 </p>
               </div>
               
