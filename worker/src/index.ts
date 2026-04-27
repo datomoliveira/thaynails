@@ -69,12 +69,17 @@ export default {
         3. Provide a professional analysis of how the shape "${shape}" and color "${color}" would look.
         Return ONLY a JSON object with this structure: { "analysis": "string", "nails": [ { "polygon": [[y, x], ...] } ] }`;
         
+        // 2. Call Gemini for AI analysis
+        const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        const base64Image = b64encode(imageBuffer);
+
         const result = await model.generateContent([
           prompt,
           {
             inlineData: {
               data: base64Image,
-              mimeType: imageFile.type
+              mimeType: imageFile.type || 'image/jpeg'
             }
           }
         ]);
