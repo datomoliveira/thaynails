@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Check, Palette, Sparkles, Loader2 } from 'lucide-react';
+import { ArrowLeft, Palette, Sparkles, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const SHAPES = [
