@@ -22,7 +22,7 @@ export default function Editor({ imageFile, onBack }: { imageFile: File | null, 
   const [selectedShape, setSelectedShape] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [simulationResult, setSimulationResult] = useState<{ imageUrl: string, analysis: string } | null>(null);
+  const [simulationResult, setSimulationResult] = useState<{ imageUrl: string, analysis: string, nails?: { polygon: number[][] }[] } | null>(null);
 
   const previewUrl = React.useMemo(() => imageFile ? URL.createObjectURL(imageFile) : null, [imageFile]);
 
@@ -53,7 +53,8 @@ export default function Editor({ imageFile, onBack }: { imageFile: File | null, 
       const data = await response.json();
       setSimulationResult({
         imageUrl: data.imageUrl,
-        analysis: data.analysis
+        analysis: data.analysis,
+        nails: data.nails
       });
       setStep('result');
     } catch (e) {
@@ -86,6 +87,29 @@ export default function Editor({ imageFile, onBack }: { imageFile: File | null, 
           alt="Preview" 
           className="w-full h-full object-cover opacity-90 transition-transform duration-700 group-hover:scale-105"
         />
+
+        {/* Virtual Paint Overlay */}
+        {simulationResult?.nails && (
+          <svg 
+            className="absolute inset-0 w-full h-full pointer-events-none z-10" 
+            viewBox="0 0 1000 1000" 
+            preserveAspectRatio="none"
+          >
+            {simulationResult.nails.map((nail, i) => (
+              <polygon
+                key={i}
+                points={nail.polygon.map(([y, x]) => `${x},${y}`).join(' ')}
+                fill={COLORS.find(c => c.id === selectedColor)?.hex || '#FF0000'}
+                className="transition-all duration-1000"
+                style={{ 
+                  mixBlendMode: 'multiply', 
+                  opacity: 0.85,
+                  filter: 'blur(0.5px)' 
+                }}
+              />
+            ))}
+          </svg>
+        )}
         
         {/* Loading Overlay */}
         <AnimatePresence>

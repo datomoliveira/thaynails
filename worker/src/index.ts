@@ -51,14 +51,11 @@ export default {
 
         const { data: { publicUrl } } = supabase.storage.from('nail-images').getPublicUrl(fileName);
 
-        // 2. Call Gemini for AI analysis (Simulation description or logic)
-        const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-
-        const imageBuffer = await imageFile.arrayBuffer();
-        const base64Image = b64encode(imageBuffer);
-
-        const prompt = `Analyze this hand and simulate how the nails would look with the shape "${shape}" and the color "${color}". Provide a descriptive result for the simulator.`;
+        const prompt = `You are a professional nail technician AI. Analyze the hand in the image. 
+        1. Identify each fingernail accurately.
+        2. For each nail, provide a precise polygon (list of [y, x] points, normalized 0-1000) that outlines the nail perfectly.
+        3. Provide a professional analysis of how the shape "${shape}" and color "${color}" would look.
+        Return ONLY a JSON object with this structure: { "analysis": "string", "nails": [ { "polygon": [[y, x], ...] } ] }`;
         
         const result = await model.generateContent([
           prompt,
@@ -71,17 +68,21 @@ export default {
         ]);
 
         const aiResponse = result.response.text();
+        // Extract JSON from potential markdown blocks
+        const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+        const simulationData = jsonMatch ? JSON.parse(jsonMatch[0]) : { analysis: aiResponse, nails: [] };
 
         // 3. Store in D1
-        const userId = "anonymous"; // Replace with auth if needed
+        const userId = "anonymous";
         await env.DB.prepare(
           "INSERT INTO simulations (user_id, image_url, shape, color, ai_response, created_at) VALUES (?, ?, ?, ?, ?, ?)"
-        ).bind(userId, publicUrl, shape, color, aiResponse, new Date().toISOString()).run();
+        ).bind(userId, publicUrl, shape, color, simulationData.analysis, new Date().toISOString()).run();
 
         return new Response(JSON.stringify({
           success: true,
           imageUrl: publicUrl,
-          analysis: aiResponse,
+          analysis: simulationData.analysis,
+          nails: simulationData.nails,
           shape,
           color
         }), { status: 200, headers: corsHeaders });
