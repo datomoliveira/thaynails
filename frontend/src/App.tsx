@@ -4,6 +4,15 @@ import Editor from './components/Editor';
 
 function App() {
   const [currentTab, setCurrentTab] = useState('home');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      setCurrentTab('editor');
+    }
+  };
 
   return (
     <div className="min-h-screen relative flex flex-col items-center bg-background select-none touch-none">
@@ -46,8 +55,8 @@ function App() {
           <div className="flex flex-col items-center justify-center flex-1 animate-in fade-in slide-in-from-bottom-8 duration-500">
             <h2 className="text-3xl font-bold mb-10 tracking-tight text-center">Envie sua foto</h2>
             
-            <div className="w-full aspect-[3/4] glass-panel border-dashed border-2 border-primary/30 flex flex-col items-center justify-center gap-6 cursor-pointer hover:bg-primary/5 active:scale-95 transition-all"
-                 onClick={() => setCurrentTab('editor')}>
+            <label className="w-full aspect-[3/4] glass-panel border-dashed border-2 border-primary/30 flex flex-col items-center justify-center gap-6 cursor-pointer hover:bg-primary/5 active:scale-95 transition-all">
+              <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
               <div className="p-6 bg-primary/10 rounded-full text-primary shadow-neon-blue">
                 <Upload size={40} />
               </div>
@@ -55,12 +64,12 @@ function App() {
                 <p className="text-white font-medium text-lg">Tirar Foto ou Galeria</p>
                 <p className="text-white/40 text-sm mt-1">Clique para iniciar</p>
               </div>
-            </div>
+            </label>
           </div>
         )}
 
         {currentTab === 'editor' && (
-          <Editor onBack={() => setCurrentTab('home')} />
+          <Editor imageFile={selectedFile} onBack={() => { setCurrentTab('home'); setSelectedFile(null); }} />
         )}
       </main>
 

@@ -17,11 +17,14 @@ const SHAPES = [
   { id: 'white', hex: '#FFFFFF', name: 'Branco' },
 ];
 
-export default function Editor({ onBack }: { onBack: () => void }) {
+export default function Editor({ imageFile, onBack }: { imageFile: File | null, onBack: () => void }) {
   const [step, setStep] = useState<'shape' | 'color' | 'result'>('shape');
   const [selectedShape, setSelectedShape] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [simulationResult, setSimulationResult] = useState<{ imageUrl: string, analysis: string } | null>(null);
+
+  const previewUrl = React.useMemo(() => imageFile ? URL.createObjectURL(imageFile) : null, [imageFile]);
 
   const handleApplyShape = () => {
     if (!selectedShape) return;
@@ -29,15 +32,33 @@ export default function Editor({ onBack }: { onBack: () => void }) {
   };
 
   const handleApplyColor = async () => {
-    if (!selectedColor) return;
+    if (!selectedColor || !imageFile) return;
     
     setIsProcessing(true);
     
     try {
-      await new Promise(resolve => setTimeout(resolve, 2500));
+      const formData = new FormData();
+      formData.append('image', imageFile);
+      formData.append('shape', selectedShape);
+      formData.append('color', selectedColor);
+
+      // Replace with your actual Worker URL after deployment
+      const response = await fetch('https://thaynails-worker.datomoliveira.workers.dev/api/simulate', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error('Falha na simulação');
+
+      const data = await response.json();
+      setSimulationResult({
+        imageUrl: data.imageUrl,
+        analysis: data.analysis
+      });
       setStep('result');
     } catch (e) {
       console.error(e);
+      alert('Erro ao processar simulação. Verifique sua conexão.');
     } finally {
       setIsProcessing(false);
     }
@@ -61,8 +82,8 @@ export default function Editor({ onBack }: { onBack: () => void }) {
       {/* Image Preview Area */}
       <div className="w-full aspect-[3/4] glass-panel mb-8 relative overflow-hidden flex items-center justify-center border-white/5 group">
         <img 
-          src="https://images.unsplash.com/photo-1519014816548-bf5fe059e98b?q=80&w=600&auto=format&fit=crop" 
-          alt="Mão" 
+          src={simulationResult?.imageUrl || previewUrl || "https://images.unsplash.com/photo-1519014816548-bf5fe059e98b?q=80&w=600&auto=format&fit=crop"} 
+          alt="Preview" 
           className="w-full h-full object-cover opacity-90 transition-transform duration-700 group-hover:scale-105"
         />
         
@@ -178,9 +199,11 @@ export default function Editor({ onBack }: { onBack: () => void }) {
               animate={{ opacity: 1, scale: 1 }}
               className="flex flex-col flex-1"
             >
-              <div className="bg-primary/10 border border-primary/30 rounded-2xl p-4 text-center mb-6">
-                <h3 className="text-primary font-medium mb-1">Incrível!</h3>
-                <p className="text-white/70 text-sm">Sua unha foi simulada com sucesso.</p>
+              <div className="bg-primary/10 border border-primary/30 rounded-2xl p-5 mb-6 overflow-y-auto max-h-[150px]">
+                <h3 className="text-primary font-bold mb-2">Simulação Concluída</h3>
+                <p className="text-white/80 text-sm italic leading-relaxed">
+                  {simulationResult?.analysis || "Sua unha foi simulada com sucesso."}
+                </p>
               </div>
               
               <div className="mt-auto pt-4 flex gap-3">

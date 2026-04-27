@@ -3,11 +3,11 @@ main = "src/index.ts"
 compatibility_date = "2024-04-26"
 compatibility_flags = ["nodejs_compat"]
 
-# [[d1_databases]]
-# binding = "D1_DB"
-# database_name = "thaynails-db"
-# database_id = "your-database-id"
+[vars]
+# SUPABASE_URL and SUPABASE_ANON_KEY will be added here or via secrets
+# GEMINI_API_KEY is handled via secrets
 
-# [[r2_buckets]]
-# binding = "R2_BUCKET"
-# bucket_name = "thaynails-images"
+[[d1_databases]]
+binding = "DB"
+database_name = "thaynails-db"
+database_id = "c79a98a3-5e8c-4c06-9b6c-b82e70a90613"
