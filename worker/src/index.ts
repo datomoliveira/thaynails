@@ -53,7 +53,7 @@ export default {
 
         // 2. Call Gemini for AI analysis (Simulation description or logic)
         const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
         const imageBuffer = await imageFile.arrayBuffer();
         const base64Image = b64encode(imageBuffer);
