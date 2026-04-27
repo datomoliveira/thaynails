@@ -38,8 +38,7 @@ export default {
           return new Response(JSON.stringify({ error: 'Image is required' }), { status: 400, headers: corsHeaders });
         }
 
-        // 1. Upload image to Supabase Storage (Direct REST API)
-        // Aggressively clean URL: extract only protocol + host
+        // 1. Upload image to Supabase Storage
         let supabaseUrl = env.SUPABASE_URL.trim();
         try {
           const urlObj = new URL(supabaseUrl);
@@ -48,29 +47,21 @@ export default {
           supabaseUrl = supabaseUrl.replace(/\/$/, "");
         }
         
+        const supabase = createClient(supabaseUrl, env.SUPABASE_SERVICE_ROLE_KEY);
         const fileExt = imageFile.name.split('.').pop() || 'jpg';
         const fileName = `${Date.now()}.${fileExt}`;
         const imageBuffer = await imageFile.arrayBuffer();
         
-        const uploadUrl = `${supabaseUrl}/storage/v1/object/nail-images/${fileName}`;
-        
-        const uploadResponse = await fetch(uploadUrl, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
-            'apikey': env.SUPABASE_SERVICE_ROLE_KEY,
-            'Content-Type': imageFile.type || 'image/jpeg',
-            'x-upsert': 'false'
-          },
-          body: imageBuffer
-        });
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('nail-images')
+          .upload(fileName, imageBuffer, {
+            contentType: imageFile.type || 'image/jpeg',
+            upsert: false
+          });
 
-        if (!uploadResponse.ok) {
-          const errorText = await uploadResponse.text();
-          throw new Error(`Supabase REST Error: ${uploadResponse.status} - ${errorText}`);
-        }
+        if (uploadError) throw new Error(`Supabase Error: ${uploadError.message}`);
         
-        const { data: { publicUrl } } = createClient(supabaseUrl, env.SUPABASE_SERVICE_ROLE_KEY).storage.from('nail-images').getPublicUrl(fileName);
+        const { data: { publicUrl } } = supabase.storage.from('nail-images').getPublicUrl(fileName);
 
         const prompt = `You are a professional nail technician AI. Analyze the hand in the image. 
         1. Identify each fingernail accurately.
