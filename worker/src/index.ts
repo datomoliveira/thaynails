@@ -38,25 +38,30 @@ export default {
           return new Response(JSON.stringify({ error: 'Image is required' }), { status: 400, headers: corsHeaders });
         }
 
-        // 1. Upload image to Supabase Storage
-        const supabaseUrl = env.SUPABASE_URL.trim().replace(/\/$/, ""); // Remove trailing slash
-        const supabase = createClient(supabaseUrl, env.SUPABASE_SERVICE_ROLE_KEY);
-        
-        // Sanitize filename and use ArrayBuffer for stability
+        // 1. Upload image to Supabase Storage (Direct REST API)
+        const supabaseUrl = env.SUPABASE_URL.trim().replace(/\/$/, "");
         const fileExt = imageFile.name.split('.').pop() || 'jpg';
         const fileName = `${Date.now()}.${fileExt}`;
         const imageBuffer = await imageFile.arrayBuffer();
         
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('nail-images')
-          .upload(fileName, imageBuffer, {
-            contentType: imageFile.type,
-            upsert: false
-          });
+        const uploadUrl = `${supabaseUrl}/storage/v1/object/nail-images/${fileName}`;
+        
+        const uploadResponse = await fetch(uploadUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+            'Content-Type': imageFile.type || 'image/jpeg',
+            'x-upsert': 'false'
+          },
+          body: imageBuffer
+        });
 
-        if (uploadError) throw new Error(`Supabase Upload Error: ${uploadError.message}`);
-
-        const { data: { publicUrl } } = supabase.storage.from('nail-images').getPublicUrl(fileName);
+        if (!uploadResponse.ok) {
+          const errorText = await uploadResponse.text();
+          throw new Error(`Supabase REST Error: ${uploadResponse.status} - ${errorText}`);
+        }
+        
+        const { data: { publicUrl } } = createClient(supabaseUrl, env.SUPABASE_SERVICE_ROLE_KEY).storage.from('nail-images').getPublicUrl(fileName);
 
         const prompt = `You are a professional nail technician AI. Analyze the hand in the image. 
         1. Identify each fingernail accurately.
