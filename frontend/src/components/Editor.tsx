@@ -57,9 +57,9 @@ export default function Editor({ imageFile, onBack }: { imageFile: File | null, 
         nails: data.nails
       });
       setStep('result');
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      alert('Erro ao processar simulação. Verifique sua conexão.');
+      alert(`Erro: ${e.message || 'Falha na conexão com o servidor'}. Verifique se a URL do Worker está correta no painel da Cloudflare.`);
     } finally {
       setIsProcessing(false);
     }
