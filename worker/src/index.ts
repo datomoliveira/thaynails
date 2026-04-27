@@ -39,7 +39,15 @@ export default {
         }
 
         // 1. Upload image to Supabase Storage (Direct REST API)
-        const supabaseUrl = env.SUPABASE_URL.trim().replace(/\/$/, "");
+        // Aggressively clean URL: extract only protocol + host
+        let supabaseUrl = env.SUPABASE_URL.trim();
+        try {
+          const urlObj = new URL(supabaseUrl);
+          supabaseUrl = `${urlObj.protocol}//${urlObj.host}`;
+        } catch (e) {
+          supabaseUrl = supabaseUrl.replace(/\/$/, "");
+        }
+        
         const fileExt = imageFile.name.split('.').pop() || 'jpg';
         const fileName = `${Date.now()}.${fileExt}`;
         const imageBuffer = await imageFile.arrayBuffer();
