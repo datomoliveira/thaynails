@@ -50,6 +50,7 @@ export default {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+            'apikey': env.SUPABASE_SERVICE_ROLE_KEY,
             'Content-Type': imageFile.type || 'image/jpeg',
             'x-upsert': 'false'
           },
