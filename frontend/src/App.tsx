@@ -1,3 +1,4 @@
+// Build trigger
 import React, { useState } from 'react';
 import { Camera, Upload, Sparkles, Heart } from 'lucide-react';
 import Editor from './components/Editor';
