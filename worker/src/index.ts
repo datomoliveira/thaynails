@@ -38,13 +38,18 @@ export default {
           return new Response(JSON.stringify({ error: 'Image is required' }), { status: 400, headers: corsHeaders });
         }
 
-        // 1. Upload to Supabase Storage
-        const fileName = `${Date.now()}-${imageFile.name}`;
+        // 1. Upload image to Supabase Storage
+        const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
+        
+        // Sanitize filename to avoid "Invalid path" errors
+        const fileExt = imageFile.name.split('.').pop() || 'jpg';
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+        
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('nail-images')
           .upload(fileName, imageFile, {
             contentType: imageFile.type,
-            upsert: true
+            upsert: false
           });
 
         if (uploadError) throw new Error(`Supabase Upload Error: ${uploadError.message}`);
