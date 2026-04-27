@@ -48,7 +48,10 @@ export default function Editor({ imageFile, onBack }: { imageFile: File | null, 
         body: formData,
       });
 
-      if (!response.ok) throw new Error('Falha na simulação');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Falha na simulação');
+      }
 
       const data = await response.json();
       setSimulationResult({
