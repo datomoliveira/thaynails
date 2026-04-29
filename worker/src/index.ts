@@ -67,38 +67,22 @@ export default {
         }
 
         const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        // Switching to gemini-1.5-flash as requested for testing and better availability
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
         const base64Image = Buffer.from(imageBuffer).toString('base64');
 
-        let result;
-        let lastError;
-        const maxRetries = 2; // Reduced to preserve quota
-        
-        for (let attempt = 0; attempt < maxRetries; attempt++) {
-          try {
-            result = await model.generateContent([
-              { text: prompt },
-              {
-                inlineData: {
-                  data: base64Image,
-                  mimeType: imageFile.type || 'image/jpeg'
-                }
-              }
-            ]);
-            if (result) break; // Success!
-          } catch (error: any) {
-            lastError = error;
-            console.error(`Gemini Attempt ${attempt + 1} failed:`, error.message);
-            // If it's a 503 or 429, wait and retry
-            if (error.message.includes('503') || error.message.includes('429') || error.message.includes('high demand')) {
-              await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1))); // Exponential backoff
-              continue;
+        // Only one attempt as requested
+        const result = await model.generateContent([
+          { text: prompt },
+          {
+            inlineData: {
+              data: base64Image,
+              mimeType: imageFile.type || 'image/jpeg'
             }
-            throw error; // Other errors fail immediately
           }
-        }
+        ]);
 
-        if (!result) throw lastError || new Error('Failed to get response from Gemini after retries');
+        if (!result) throw new Error('Failed to get response from Gemini');
 
         const aiResponse = result.response.text();
         console.log("AI Response:", aiResponse);
