@@ -67,8 +67,7 @@ export default {
         }
 
         const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
-        // Switching to gemini-1.5-flash as requested for testing and better availability
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
         const base64Image = Buffer.from(imageBuffer).toString('base64');
 
         // Only one attempt as requested
