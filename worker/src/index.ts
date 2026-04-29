@@ -39,16 +39,7 @@ export default {
         }
 
         // 1. Upload image to Supabase Storage
-        let supabaseUrl = env.SUPABASE_URL.trim();
-        try {
-          const urlObj = new URL(supabaseUrl);
-          supabaseUrl = `${urlObj.protocol}//${urlObj.host}`;
-        } catch (e) {
-          supabaseUrl = supabaseUrl.replace(/\/$/, "");
-        }
-        
-        const supabase = createClient(supabaseUrl, env.SUPABASE_SERVICE_ROLE_KEY);
-        const fileExt = imageFile.name.split('.').pop() || 'jpg';
+        const fileExt = imageFile.name?.split('.').pop() || 'jpg';
         const fileName = `${Date.now()}.${fileExt}`;
         const imageBuffer = await imageFile.arrayBuffer();
         
@@ -70,12 +61,21 @@ export default {
         Return ONLY a JSON object with this structure: { "analysis": "string", "nails": [ { "polygon": [[y, x], ...] } ] }`;
         
         // 2. Call Gemini for AI analysis
+        if (!env.GEMINI_API_KEY) {
+          throw new Error('GEMINI_API_KEY is not configured in the worker environment.');
+        }
+
         const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-        const base64Image = b64encode(imageBuffer);
+        // Using gemini-1.5-flash for fast and reliable image analysis
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        
+        // Use Buffer for more efficient base64 encoding (supported by nodejs_compat)
+        const base64Image = Buffer.from(imageBuffer).toString('base64');
 
         const result = await model.generateContent([
-          prompt,
+          {
+            text: prompt
+          },
           {
             inlineData: {
               data: base64Image,
@@ -85,26 +85,40 @@ export default {
         ]);
 
         const aiResponse = result.response.text();
+        console.log("AI Response:", aiResponse);
+
         // Extract JSON from potential markdown blocks
         const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
-        const simulationData = jsonMatch ? JSON.parse(jsonMatch[0]) : { analysis: aiResponse, nails: [] };
+        let simulationData;
+        try {
+          simulationData = jsonMatch ? JSON.parse(jsonMatch[0]) : { analysis: aiResponse, nails: [] };
+        } catch (e) {
+          console.error("JSON Parse Error:", e);
+          simulationData = { analysis: aiResponse, nails: [] };
+        }
 
         // 3. Store in D1
         const userId = "anonymous";
-        await env.DB.prepare(
-          "INSERT INTO simulations (user_id, image_url, shape, color, ai_response, created_at) VALUES (?, ?, ?, ?, ?, ?)"
-        ).bind(userId, publicUrl, shape, color, simulationData.analysis, new Date().toISOString()).run();
+        try {
+          await env.DB.prepare(
+            "INSERT INTO simulations (user_id, image_url, shape, color, ai_response, created_at) VALUES (?, ?, ?, ?, ?, ?)"
+          ).bind(userId, publicUrl, shape, color, simulationData.analysis || aiResponse, new Date().toISOString()).run();
+        } catch (dbError) {
+          console.error("D1 Error:", dbError);
+          // Don't fail the whole request if DB storage fails
+        }
 
         return new Response(JSON.stringify({
           success: true,
           imageUrl: publicUrl,
-          analysis: simulationData.analysis,
-          nails: simulationData.nails,
+          analysis: simulationData.analysis || aiResponse,
+          nails: simulationData.nails || [],
           shape,
           color
         }), { status: 200, headers: corsHeaders });
 
       } catch (error: any) {
+        console.error("Worker Error:", error.message);
         return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: corsHeaders });
       }
     }
@@ -112,13 +126,3 @@ export default {
     return new Response(JSON.stringify({ message: 'ThayNails API is active' }), { status: 200, headers: corsHeaders });
   },
 };
-
-// Helper to encode array buffer to base64
-function b64encode(buffer: ArrayBuffer): string {
-  let binary = '';
-  const bytes = new Uint8Array(buffer);
-  for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary);
-}
