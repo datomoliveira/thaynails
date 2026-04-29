@@ -67,7 +67,7 @@ export default {
         }
 
         const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
         const base64Image = Buffer.from(imageBuffer).toString('base64');
 
         // Only one attempt as requested
