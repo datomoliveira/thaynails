@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { Buffer } from 'node:buffer';
 
 export interface Env {
   DB: D1Database;
@@ -66,10 +67,9 @@ export default {
         }
 
         const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
-        // Using gemini-1.5-flash for fast and reliable image analysis
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
         
-        // Use Buffer for more efficient base64 encoding (supported by nodejs_compat)
+        // Use Buffer for more efficient base64 encoding (imported from node:buffer)
         const base64Image = Buffer.from(imageBuffer).toString('base64');
 
         const result = await model.generateContent([
