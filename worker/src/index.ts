@@ -72,7 +72,7 @@ export default {
 
         let result;
         let lastError;
-        const maxRetries = 3;
+        const maxRetries = 2; // Reduced to preserve quota
         
         for (let attempt = 0; attempt < maxRetries; attempt++) {
           try {

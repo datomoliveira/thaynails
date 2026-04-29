@@ -37,8 +37,11 @@ export default function Editor({ imageFile, onBack }: { imageFile: File | null, 
     setIsProcessing(true);
     
     try {
+      // Image Compression
+      const compressedImage = await compressImage(imageFile);
+      
       const formData = new FormData();
-      formData.append('image', imageFile);
+      formData.append('image', compressedImage);
       formData.append('shape', selectedShape);
       formData.append('color', selectedColor);
 
@@ -71,6 +74,46 @@ export default function Editor({ imageFile, onBack }: { imageFile: File | null, 
       setIsProcessing(false);
     }
   };
+
+  // Helper function for image compression
+  async function compressImage(file: File): Promise<Blob> {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          
+          // Max size 1200px
+          const MAX_SIZE = 1200;
+          if (width > height) {
+            if (width > MAX_SIZE) {
+              height *= MAX_SIZE / width;
+              width = MAX_SIZE;
+            }
+          } else {
+            if (height > MAX_SIZE) {
+              width *= MAX_SIZE / height;
+              height = MAX_SIZE;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          
+          canvas.toBlob((blob) => {
+            resolve(blob || file);
+          }, 'image/jpeg', 0.8);
+        };
+        img.src = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
 
   return (
     <div className="flex flex-col w-full h-full animate-in fade-in slide-in-from-right-4 duration-500">
