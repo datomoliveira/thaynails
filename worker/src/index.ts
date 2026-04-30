@@ -58,7 +58,7 @@ export default {
             prompt: prompt,
             image: [...new Uint8Array(imageBuffer)],
             strength: 0.6, // How much to change the original image (0.6 is good for keeping the hand but changing nails)
-            num_steps: 30
+            num_steps: 20
           }
         );
 
