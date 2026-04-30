@@ -141,7 +141,7 @@ export default function Editor({ imageFile, onBack }: { imageFile: File | null, 
         <img 
           src={simulationResult?.imageUrl || previewUrl || "https://images.unsplash.com/photo-1519014816548-bf5fe059e98b?q=80&w=600&auto=format&fit=crop"} 
           alt="Preview" 
-          className="w-full h-full object-cover opacity-90 transition-transform duration-700 group-hover:scale-105"
+          className="w-full h-full object-contain opacity-90 transition-transform duration-700 group-hover:scale-105"
         />
 
         {/* Virtual Paint Overlay */}
@@ -149,7 +149,7 @@ export default function Editor({ imageFile, onBack }: { imageFile: File | null, 
           <svg 
             className="absolute inset-0 w-full h-full pointer-events-none z-10" 
             viewBox="0 0 1000 1000" 
-            preserveAspectRatio="xMidYMid slice"
+            preserveAspectRatio="xMidYMid meet"
           >
             {simulationResult.nails.map((nail, i) => (
               <polygon
