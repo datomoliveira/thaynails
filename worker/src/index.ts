@@ -98,7 +98,7 @@ export default {
         // 2. Call Gemini for AI analysis
         console.log("Calling Gemini AI...");
         const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-pro-exp-02-05" });
         const base64Image = Buffer.from(imageBuffer).toString('base64');
 
         const result = await model.generateContent([
