@@ -56,28 +56,14 @@ function App() {
           <div className="flex flex-col items-center justify-center flex-1 animate-in fade-in slide-in-from-bottom-8 duration-500">
             <h2 className="text-3xl font-bold mb-10 tracking-tight text-center">Envie sua foto</h2>
             
-            <label className="w-full aspect-[3/4] glass-panel border-dashed border-2 border-primary/30 flex flex-col items-center justify-center gap-6 cursor-pointer hover:bg-primary/5 active:scale-95 transition-all relative overflow-hidden">
+            <label className="w-full aspect-[3/4] glass-panel border-dashed border-2 border-primary/30 flex flex-col items-center justify-center gap-6 cursor-pointer hover:bg-primary/5 active:scale-95 transition-all">
               <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
-              
-              {/* Hand Guide Overlay */}
-              <div className="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none">
-                <svg viewBox="0 0 400 500" className="w-full h-full p-10 text-primary">
-                  <path fill="currentColor" d="M150,450 Q140,350 130,250 Q120,150 140,80 Q145,60 160,60 Q175,60 180,80 Q190,150 200,250 Q210,350 220,450 Z" />
-                  <path fill="currentColor" d="M100,430 Q110,330 110,230 Q110,130 90,70 Q85,55 70,55 Q55,55 50,70 Q40,130 50,230 Q60,330 70,430 Z" />
-                  <path fill="currentColor" d="M250,430 Q240,330 240,230 Q240,130 260,70 Q265,55 280,55 Q295,55 300,70 Q310,130 300,230 Q290,330 280,430 Z" />
-                  <path fill="currentColor" d="M330,400 Q320,300 320,200 Q320,100 340,50 Q345,40 360,40 Q375,40 380,50 Q390,100 380,200 Q370,300 360,400 Z" />
-                  <path fill="currentColor" d="M30,350 Q40,250 50,200 Q70,100 100,80 Q115,70 125,85 Q135,100 120,130 Q100,180 80,250 Q60,300 50,350 Z" />
-                </svg>
+              <div className="p-6 bg-primary/10 rounded-full text-primary shadow-neon-blue">
+                <Upload size={40} />
               </div>
-
-              <div className="relative z-10 flex flex-col items-center gap-4">
-                <div className="p-6 bg-primary/10 rounded-full text-primary shadow-neon-blue">
-                  <Upload size={40} />
-                </div>
-                <div className="text-center">
-                  <p className="text-white font-medium text-lg">Alinhe sua mão e Tire a Foto</p>
-                  <p className="text-white/40 text-sm mt-1">Use o guia transparente para melhor precisão</p>
-                </div>
+              <div className="text-center">
+                <p className="text-white font-medium text-lg">Envie sua foto</p>
+                <p className="text-white/40 text-sm mt-1">Clique para iniciar</p>
               </div>
             </label>
           </div>

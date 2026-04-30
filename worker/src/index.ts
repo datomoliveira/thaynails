@@ -53,7 +53,7 @@ export default {
         const prompt = `A professional close-up photo of a hand with nails perfectly painted in ${color} color and ${shape} shape. High fashion nail photography, realistic textures, cinematic lighting, 8k resolution.`;
         
         const aiResponse = await env.AI.run(
-          "@cf/stabilityai/stable-diffusion-xl-base-1.0",
+          "@cf/runwayml/stable-diffusion-v1-5-img2img",
           {
             prompt: prompt,
             image: [...new Uint8Array(imageBuffer)],
