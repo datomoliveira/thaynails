@@ -56,32 +56,16 @@ function App() {
           <div className="flex flex-col items-center justify-center flex-1 animate-in fade-in slide-in-from-bottom-8 duration-500">
             <h2 className="text-3xl font-bold mb-10 tracking-tight text-center">Envie sua foto</h2>
             
-            <div className="w-full aspect-[3/4] glass-panel border-2 border-primary/30 flex flex-col items-center justify-center relative overflow-hidden group">
-              {/* The Stencil Guide */}
-              <div className="absolute inset-0 z-20 pointer-events-none flex flex-col items-center justify-center p-6">
-                <div className="w-full h-full border-2 border-primary/20 rounded-3xl flex items-center justify-center relative bg-black/20 backdrop-blur-[2px]">
-                  {/* Visual slots for fingers */}
-                  <div className="absolute top-[15%] left-[15%] w-12 h-20 border-2 border-dashed border-primary/40 rounded-full flex items-center justify-center"><span className="text-[8px] text-primary/60 font-bold">DEDÃO</span></div>
-                  <div className="absolute top-[8%] left-[35%] w-12 h-24 border-2 border-dashed border-primary/40 rounded-full flex items-center justify-center"><span className="text-[8px] text-primary/60 font-bold">INDICADOR</span></div>
-                  <div className="absolute top-[5%] left-[50%] w-12 h-26 border-2 border-dashed border-primary/40 rounded-full flex items-center justify-center"><span className="text-[8px] text-primary/60 font-bold">MÉDIO</span></div>
-                  <div className="absolute top-[10%] left-[65%] w-12 h-24 border-2 border-dashed border-primary/40 rounded-full flex items-center justify-center"><span className="text-[8px] text-primary/60 font-bold">ANELAR</span></div>
-                  <div className="absolute top-[20%] left-[80%] w-10 h-18 border-2 border-dashed border-primary/40 rounded-full flex items-center justify-center"><span className="text-[8px] text-primary/60 font-bold">MÍNIMO</span></div>
-                  
-                  <p className="absolute bottom-10 text-center text-xs text-primary font-bold animate-pulse px-6 uppercase tracking-widest">
-                    Encaixe suas unhas nos círculos pontilhados
-                  </p>
-                </div>
+            <label className="w-full aspect-[3/4] glass-panel border-dashed border-2 border-primary/30 flex flex-col items-center justify-center gap-6 cursor-pointer hover:bg-primary/5 active:scale-95 transition-all">
+              <input type="file" className="hidden" accept="image/*" capture="environment" onChange={handleFileChange} />
+              <div className="p-6 bg-primary/10 rounded-full text-primary shadow-neon-blue">
+                <Upload size={40} />
               </div>
-
-              <input type="file" className="hidden" id="file-input" accept="image/*" onChange={handleFileChange} />
-              
-              <label htmlFor="file-input" className="absolute inset-0 z-30 cursor-pointer flex flex-col items-center justify-center gap-4 bg-transparent active:bg-primary/5 transition-colors">
-                <div className="p-6 bg-primary/20 rounded-full text-primary shadow-neon-blue group-hover:scale-110 transition-transform">
-                  <Upload size={40} />
-                </div>
-                <p className="text-white font-bold text-lg">Tirar Foto / Galeria</p>
-              </label>
-            </div>
+              <div className="text-center">
+                <p className="text-white font-medium text-lg">Tirar Foto / Galeria</p>
+                <p className="text-white/40 text-sm mt-1">Enquadre bem a sua mão</p>
+              </div>
+            </label>
           </div>
         )}
 
