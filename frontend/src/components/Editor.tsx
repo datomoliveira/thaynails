@@ -151,6 +151,16 @@ export default function Editor({ imageFile, onBack }: { imageFile: File | null, 
             viewBox="0 0 1000 1000" 
             preserveAspectRatio="xMidYMid meet"
           >
+            <defs>
+              <filter id="nail-realism">
+                <feGaussianBlur in="SourceAlpha" stdDeviation="1" result="blur" />
+                <feSpecularLighting in="blur" surfaceScale="5" specularConstant="1" specularExponent="20" lightingColor="#ffffff" result="specOut">
+                  <fePointLight x="-5000" y="-10000" z="20000" />
+                </feSpecularLighting>
+                <feComposite in="specOut" in2="SourceAlpha" operator="in" result="specOut" />
+                <feComposite in="SourceGraphic" in2="specOut" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" />
+              </filter>
+            </defs>
             {simulationResult.nails.map((nail, i) => (
               <polygon
                 key={i}
@@ -158,9 +168,9 @@ export default function Editor({ imageFile, onBack }: { imageFile: File | null, 
                 fill={COLORS.find(c => c.id === selectedColor)?.hex || '#FF0000'}
                 className="transition-all duration-1000"
                 style={{ 
-                  mixBlendMode: 'multiply', 
-                  opacity: 0.85,
-                  filter: 'blur(0.5px)' 
+                   mixBlendMode: 'multiply', 
+                   opacity: 0.9,
+                   filter: 'url(#nail-realism) blur(0.3px)' 
                 }}
               />
             ))}
