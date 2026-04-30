@@ -24,14 +24,20 @@ export default {
       return new Response(null, { headers: corsHeaders });
     }
 
-    // Initialize Supabase
-    const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
-
     // Endpoint: /api/simulate
     if (request.method === 'POST' && url.pathname === '/api/simulate') {
       try {
+        console.log("Starting simulation request...");
+
+        // 0. Validate Environment
+        const requiredEnv = ['GEMINI_API_KEY', 'SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'];
+        const missingEnv = requiredEnv.filter(key => !env[key as keyof Env]);
+        if (missingEnv.length > 0) {
+          throw new Error(`Environment variables missing: ${missingEnv.join(', ')}`);
+        }
+
         const formData = await request.formData();
-        const imageFile = formData.get('image') as File;
+        const imageFile = formData.get('image') as File | Blob;
         const shape = formData.get('shape') as string;
         const color = formData.get('color') as string;
 
@@ -39,11 +45,17 @@ export default {
           return new Response(JSON.stringify({ error: 'Image is required' }), { status: 400, headers: corsHeaders });
         }
 
+        // Initialize Supabase
+        const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
+
         // 1. Upload image to Supabase Storage
-        const fileExt = imageFile.name?.split('.').pop() || 'jpg';
-        const fileName = `${Date.now()}.${fileExt}`;
+        // Blobs might not have a name, so we use a fallback
+        const originalName = (imageFile as File).name || 'image.jpg';
+        const fileExt = originalName.split('.').pop() || 'jpg';
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
         const imageBuffer = await imageFile.arrayBuffer();
         
+        console.log(`Uploading image to Supabase: ${fileName}`);
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('nail-images')
           .upload(fileName, imageBuffer, {
@@ -51,9 +63,13 @@ export default {
             upsert: false
           });
 
-        if (uploadError) throw new Error(`Supabase Error: ${uploadError.message}`);
+        if (uploadError) {
+          console.error("Supabase Upload Error:", uploadError);
+          throw new Error(`Supabase Error: ${uploadError.message}`);
+        }
         
         const { data: { publicUrl } } = supabase.storage.from('nail-images').getPublicUrl(fileName);
+        console.log("Image uploaded successfully:", publicUrl);
 
         const prompt = `You are a professional nail technician AI. Analyze the hand in the image. 
         1. Identify each fingernail accurately.
@@ -61,16 +77,12 @@ export default {
         3. Provide a professional analysis of how the shape "${shape}" and color "${color}" would look.
         Return ONLY a JSON object with this structure: { "analysis": "string", "nails": [ { "polygon": [[y, x], ...] } ] }`;
         
-        // 2. Call Gemini for AI analysis with Retry Mechanism
-        if (!env.GEMINI_API_KEY) {
-          throw new Error('GEMINI_API_KEY is not configured in the worker environment.');
-        }
-
+        // 2. Call Gemini for AI analysis
+        console.log("Calling Gemini AI...");
         const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
         const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
         const base64Image = Buffer.from(imageBuffer).toString('base64');
 
-        // Only one attempt as requested
         const result = await model.generateContent([
           { text: prompt },
           {
@@ -81,10 +93,12 @@ export default {
           }
         ]);
 
-        if (!result) throw new Error('Failed to get response from Gemini');
+        if (!result || !result.response) {
+          throw new Error('Failed to get response from Gemini');
+        }
 
         const aiResponse = result.response.text();
-        console.log("AI Response:", aiResponse);
+        console.log("AI Response received");
 
         // Extract JSON from potential markdown blocks
         const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
@@ -92,19 +106,21 @@ export default {
         try {
           simulationData = jsonMatch ? JSON.parse(jsonMatch[0]) : { analysis: aiResponse, nails: [] };
         } catch (e) {
-          console.error("JSON Parse Error:", e);
+          console.warn("JSON Parse Warning, using raw response as analysis");
           simulationData = { analysis: aiResponse, nails: [] };
         }
 
         // 3. Store in D1
         const userId = "anonymous";
-        try {
-          await env.DB.prepare(
-            "INSERT INTO simulations (user_id, image_url, shape, color, ai_response, created_at) VALUES (?, ?, ?, ?, ?, ?)"
-          ).bind(userId, publicUrl, shape, color, simulationData.analysis || aiResponse, new Date().toISOString()).run();
-        } catch (dbError) {
-          console.error("D1 Error:", dbError);
-          // Don't fail the whole request if DB storage fails
+        if (env.DB) {
+          try {
+            await env.DB.prepare(
+              "INSERT INTO simulations (user_id, image_url, shape, color, ai_response, created_at) VALUES (?, ?, ?, ?, ?, ?)"
+            ).bind(userId, publicUrl, shape, color, simulationData.analysis || aiResponse, new Date().toISOString()).run();
+            console.log("Result saved to D1");
+          } catch (dbError: any) {
+            console.error("D1 Error (non-fatal):", dbError.message);
+          }
         }
 
         return new Response(JSON.stringify({
@@ -118,10 +134,14 @@ export default {
 
       } catch (error: any) {
         console.error("Worker Error:", error.message);
-        return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: corsHeaders });
+        return new Response(JSON.stringify({ 
+          error: error.message,
+          stack: error.stack // Helpful for debugging
+        }), { status: 500, headers: corsHeaders });
       }
     }
 
     return new Response(JSON.stringify({ message: 'ThayNails API is active' }), { status: 200, headers: corsHeaders });
   },
 };
+

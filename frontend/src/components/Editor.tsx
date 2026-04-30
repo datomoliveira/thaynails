@@ -22,6 +22,7 @@ export default function Editor({ imageFile, onBack }: { imageFile: File | null, 
   const [selectedShape, setSelectedShape] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [simulationResult, setSimulationResult] = useState<{ imageUrl: string, analysis: string, nails?: { polygon: number[][] }[] } | null>(null);
 
   const previewUrl = React.useMemo(() => imageFile ? URL.createObjectURL(imageFile) : null, [imageFile]);
@@ -37,6 +38,7 @@ export default function Editor({ imageFile, onBack }: { imageFile: File | null, 
     setIsProcessing(true);
     
     try {
+      setError(null);
       // Image Compression
       const compressedImage = await compressImage(imageFile);
       
@@ -69,7 +71,11 @@ export default function Editor({ imageFile, onBack }: { imageFile: File | null, 
       setStep('result');
     } catch (e: any) {
       console.error(e);
-      alert(`Erro: ${e.message || 'Falha na conexão com o servidor'}. Verifique se a URL do Worker está correta no painel da Cloudflare.`);
+      let msg = e.message || 'Falha na conexão com o servidor';
+      if (msg.includes('Failed to fetch')) {
+        msg = "Não foi possível conectar ao servidor. Verifique se o Worker está online e se a URL (VITE_WORKER_URL) está correta.";
+      }
+      setError(msg);
     } finally {
       setIsProcessing(false);
     }
@@ -175,6 +181,31 @@ export default function Editor({ imageFile, onBack }: { imageFile: File | null, 
                 <Loader2 className="w-16 h-16 text-primary animate-spin mb-6 relative z-10" />
               </div>
               <p className="text-primary font-bold text-xl tracking-widest animate-pulse">PROCESSANDO SIMULAÇÃO</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Error Overlay */}
+        <AnimatePresence>
+          {error && (
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              className="absolute bottom-4 left-4 right-4 bg-accent/90 backdrop-blur-md p-4 rounded-xl border border-white/20 z-20 shadow-2xl"
+            >
+              <div className="flex items-start gap-3">
+                <div className="bg-white/20 p-1.5 rounded-full mt-0.5">
+                  <Sparkles size={16} className="text-white" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs font-bold uppercase tracking-wider text-white/70 mb-1">Erro na Simulação</p>
+                  <p className="text-sm text-white leading-tight font-medium">{error}</p>
+                </div>
+                <button onClick={() => setError(null)} className="text-white/50 hover:text-white">
+                  <ArrowLeft size={16} className="rotate-90" />
+                </button>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
