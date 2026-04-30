@@ -28,7 +28,7 @@ export default {
     // Endpoint: /api/simulate
     if (request.method === 'POST' && url.pathname === '/api/simulate') {
       try {
-        console.log("Starting Image-to-Image simulation...");
+        console.log("Starting Gemini-only simulation...");
 
         const requiredEnv = ['GEMINI_API_KEY', 'SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'];
         const missingEnv = requiredEnv.filter(key => !env[key as keyof Env]);
@@ -47,29 +47,14 @@ export default {
 
         const imageBuffer = await imageFile.arrayBuffer();
         
-        // 1. USE CLOUDFLARE AI for Image-to-Image (Stable Diffusion)
-        console.log("Generating realistic image with Stable Diffusion...");
-        
-        const prompt = `A professional close-up photo of a hand with nails perfectly painted in ${color} color and ${shape} shape. High fashion nail photography, realistic textures, cinematic lighting, 8k resolution.`;
-        
-        const aiResponse = await env.AI.run(
-          "@cf/runwayml/stable-diffusion-v1-5-img2img",
-          {
-            prompt: prompt,
-            image: [...new Uint8Array(imageBuffer)],
-            strength: 0.6, // How much to change the original image (0.6 is good for keeping the hand but changing nails)
-            num_steps: 20
-          }
-        );
-
-        // 2. Upload the NEW image to Supabase
+        // 1. Upload original image to Supabase
         const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
-        const fileName = `sim-${Date.now()}.png`;
+        const fileName = `${Date.now()}.jpg`;
         
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('nail-images')
-          .upload(fileName, aiResponse, {
-            contentType: 'image/png',
+          .upload(fileName, imageBuffer, {
+            contentType: imageFile.type || 'image/jpeg',
             upsert: false
           });
 
@@ -77,19 +62,29 @@ export default {
         
         const { data: { publicUrl } } = supabase.storage.from('nail-images').getPublicUrl(fileName);
 
-        // 3. Optional: Use Gemini just for the textual analysis
+        // 2. Call Gemini for high-precision coordinates
         const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-        const analysisResult = await model.generateContent([
-          { text: `Analyze this nail simulation: Shape ${shape}, Color ${color}. Provide a short professional compliment.` },
+        
+        const prompt = `Task: Nail Segmentation. 
+        Detect the 5 nails in the image. They should be aligned with the template slots.
+        Return ONLY a JSON with { "nails": [ { "polygon": [[y,x],...] } ] }. 
+        Use 0-1000 normalized coordinates. Be extremely precise.`;
+
+        const result = await model.generateContent([
+          { text: prompt },
           { inlineData: { data: Buffer.from(imageBuffer).toString('base64'), mimeType: 'image/jpeg' } }
         ]);
 
+        const aiResponse = result.response.text();
+        const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+        const simulationData = jsonMatch ? JSON.parse(jsonMatch[0]) : { nails: [] };
+
         return new Response(JSON.stringify({
           success: true,
-          imageUrl: publicUrl, // This is the NEW generated image
-          analysis: analysisResult.response.text(),
-          nails: [], // No more polygons needed!
+          imageUrl: publicUrl,
+          analysis: "",
+          nails: simulationData.nails || [],
           shape,
           color
         }), { status: 200, headers: corsHeaders });

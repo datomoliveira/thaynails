@@ -66,12 +66,13 @@ export default function Editor({ imageFile, onBack }: { imageFile: File | null, 
       
       // MODO GABARITO: Se a IA falhar ou para garantir 100% de acerto,
       // usamos as coordenadas fixas que batem com o desenho da tela anterior.
+      // UNHAS ANATÔMICAS (Curvadas) que batem 100% com o Gabarito
       const templateNails = [
-        { polygon: [[150, 150], [150, 200], [250, 200], [250, 150]] }, // Dedão
-        { polygon: [[80, 350], [80, 400], [200, 400], [200, 350]] },  // Indicador
-        { polygon: [[50, 500], [50, 550], [180, 550], [180, 500]] },  // Médio
-        { polygon: [[100, 650], [100, 700], [220, 700], [220, 650]] }, // Anelar
-        { polygon: [[200, 800], [200, 840], [300, 840], [300, 800]] }  // Mínimo
+        { polygon: [[180, 160], [160, 165], [155, 180], [160, 195], [180, 200], [240, 195], [250, 180], [240, 165]] }, // Dedão
+        { polygon: [[100, 360], [85, 365], [80, 375], [85, 385], [100, 390], [190, 390], [200, 375], [190, 360]] },  // Indicador
+        { polygon: [[70, 510], [55, 515], [50, 525], [55, 535], [70, 540], [170, 540], [180, 525], [170, 510]] },  // Médio
+        { polygon: [[120, 660], [105, 665], [100, 675], [105, 685], [120, 690], [210, 690], [220, 675], [210, 660]] }, // Anelar
+        { polygon: [[220, 810], [205, 815], [200, 820], [205, 830], [220, 835], [290, 835], [300, 820], [290, 810]] }  // Mínimo
       ];
 
       setSimulationResult({
@@ -325,12 +326,7 @@ export default function Editor({ imageFile, onBack }: { imageFile: File | null, 
               animate={{ opacity: 1, scale: 1 }}
               className="flex flex-col flex-1"
             >
-              <div className="bg-primary/10 border border-primary/30 rounded-2xl p-5 mb-6 overflow-y-auto max-h-[150px]">
-                <h3 className="text-primary font-bold mb-2">Simulação Concluída ✨</h3>
-                <p className="text-white/80 text-sm italic leading-relaxed">
-                  {simulationResult?.analysis || "Sua unha foi simulada com sucesso absoluta!"}
-                </p>
-              </div>
+              {/* Removed analysis section */}
               
               <div className="mt-auto pt-4 flex gap-3">
                 <button 
