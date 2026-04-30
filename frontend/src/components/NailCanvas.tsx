@@ -14,7 +14,7 @@
  *  ao Stable Diffusion Inpainting quando for necessário.
  */
 
-import React, { useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
+import { useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import type { NailPolygon } from '../hooks/useNailSegmentation';
 
 interface NailCanvasProps {
