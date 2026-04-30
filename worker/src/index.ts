@@ -71,11 +71,29 @@ export default {
         const { data: { publicUrl } } = supabase.storage.from('nail-images').getPublicUrl(fileName);
         console.log("Image uploaded successfully:", publicUrl);
 
-        const prompt = `You are a professional nail technician AI. Analyze the hand in the image. 
-        1. Identify each fingernail accurately.
-        2. For each nail, provide a precise polygon (list of [y, x] points, normalized 0-1000) that outlines the nail perfectly.
-        3. Provide a professional analysis of how the shape "${shape}" and color "${color}" would look.
-        Return ONLY a JSON object with this structure: { "analysis": "string", "nails": [ { "polygon": [[y, x], ...] } ] }`;
+        const prompt = `You are a high-precision computer vision specialist for a beauty app. 
+        Your task is to identify and outline EVERY fingernail visible in the image with extreme accuracy.
+
+        COORDINATE SYSTEM:
+        - Use a normalized coordinate system from 0 to 1000 for both axes.
+        - [0, 0] is the top-left corner of the image.
+        - [1000, 1000] is the bottom-right corner.
+        - Output coordinates as [y, x] pairs.
+
+        GUIDELINES:
+        1. Zoom in mentally on the hand. Identify the 5 fingers if possible.
+        2. For each nail, provide a dense polygon (at least 15-20 points) that follows the EXACT curve of the nail bed and the tip.
+        3. Ensure the polygon stays strictly within the nail boundaries.
+        4. Analyze the requested shape "${shape}" and color "${color}" and describe how they would look on this specific hand.
+
+        OUTPUT FORMAT (JSON ONLY):
+        {
+          "analysis": "Professional analysis of the look...",
+          "nails": [
+            { "polygon": [[y1, x1], [y2, x2], ..., [y20, x20]] },
+            ... (for each nail)
+          ]
+        }`;
         
         // 2. Call Gemini for AI analysis
         console.log("Calling Gemini AI...");

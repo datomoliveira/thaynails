@@ -149,7 +149,7 @@ export default function Editor({ imageFile, onBack }: { imageFile: File | null, 
           <svg 
             className="absolute inset-0 w-full h-full pointer-events-none z-10" 
             viewBox="0 0 1000 1000" 
-            preserveAspectRatio="none"
+            preserveAspectRatio="xMidYMid slice"
           >
             {simulationResult.nails.map((nail, i) => (
               <polygon
