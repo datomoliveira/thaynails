@@ -12,3 +12,6 @@ compatibility_flags = ["nodejs_compat"]
 binding = "DB"
 database_name = "thaynails-db"
 database_id = "c79a98a3-5e8c-4c06-9b6c-b82e70a90613"
+
+[ai]
+binding = "AI"
