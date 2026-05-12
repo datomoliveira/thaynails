@@ -1,18 +1,10 @@
 /**
  * Editor — Pipeline Completo ThayNails
- *
- * Fluxo:
- *  1. Usuária escolhe formato e cor
- *  2. Ao clicar em "Pintar Unhas":
- *     a) Carrega a imagem no DOM (HTMLImageElement)
- *     b) Roda o MediaPipe Hand Landmarker (Fase 1) — client-side, sem custo de API
- *     c) Recebe os polígonos de precisão cirúrgica de cada unha
- *     d) Exibe o NailCanvas (Fase 2) que aplica a cor via Blend Modes
- *  3. Usuária pode salvar ou refazer
+ * Liquid Glass Edition
  */
 
 import React, { useState, useRef, useCallback } from 'react';
-import { ArrowLeft, Palette, Sparkles, Loader2, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Palette, Sparkles, AlertTriangle, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNailSegmentation, type SegmentationResult } from '../hooks/useNailSegmentation';
 import NailCanvas, { type NailCanvasRef } from './NailCanvas';
@@ -34,6 +26,20 @@ const COLORS = [
 
 type Step = 'shape' | 'color' | 'result';
 
+// Animation variants for extreme fluidity
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20, scale: 0.9 },
+  show: { opacity: 1, y: 0, scale: 1, transition: { type: "spring" as const, bounce: 0.4 } }
+};
+
 export default function Editor({
   imageFile,
   onBack,
@@ -52,7 +58,6 @@ export default function Editor({
   const { segmentNails } = useNailSegmentation();
   const canvasRef = useRef<NailCanvasRef>(null);
 
-  // URL de preview da imagem original (não enviamos nada para servidor)
   const previewUrl = React.useMemo(
     () => (imageFile ? URL.createObjectURL(imageFile) : null),
     [imageFile]
@@ -63,10 +68,6 @@ export default function Editor({
     setStep('color');
   };
 
-  /**
-   * Pipeline principal: Fase 1 (segmentação) → renderiza Fase 2 (canvas)
-   * Tudo client-side. Nenhuma chamada de API. Zero tokens gastos.
-   */
   const handlePaint = useCallback(async () => {
     if (!selectedColor || !previewUrl) return;
 
@@ -75,21 +76,18 @@ export default function Editor({
     setSegResult(null);
 
     try {
-      // ── Carrega a imagem no DOM ──────────────────────────────────────
-      setStatusMsg('Carregando imagem...');
+      setStatusMsg('Analisando contornos...');
       const img = await loadImage(previewUrl);
 
-      // ── Fase 1: MediaPipe detecta as unhas ──────────────────────────
-      setStatusMsg('Detectando unhas com IA...');
+      setStatusMsg('Aplicando IA Vision...');
       const result = await segmentNails(img);
 
       if (!result || result.nails.length === 0) {
-        setError('Não foi possível detectar as unhas. Tente uma foto com a mão bem iluminada e enquadrada.');
+        setError('Não foi possível detectar as unhas com precisão. Tente uma foto com melhor iluminação.');
         return;
       }
 
-      // ── Fase 2: Canvas vai renderizar automaticamente via props ─────
-      setStatusMsg('Aplicando cor...');
+      setStatusMsg('Renderizando camadas...');
       setSegResult(result);
       setStep('result');
     } catch (e: any) {
@@ -100,7 +98,6 @@ export default function Editor({
     }
   }, [selectedColor, previewUrl, segmentNails]);
 
-  /** Exporta o canvas como imagem para compartilhar/salvar */
   const handleSave = useCallback(() => {
     const dataUrl = canvasRef.current?.exportImage();
     if (!dataUrl) return;
@@ -113,199 +110,282 @@ export default function Editor({
   const activeColor = COLORS.find((c) => c.id === selectedColor);
 
   return (
-    <div className="flex flex-col w-full h-full animate-in fade-in slide-in-from-right-4 duration-500">
+    <div className="flex flex-col w-full h-full relative">
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <button
+      <motion.div 
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.1, type: "spring" as const, stiffness: 100 }}
+        className="flex items-center justify-between mb-8"
+      >
+        <motion.button
+          whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,0.15)" }}
+          whileTap={{ scale: 0.9 }}
           onClick={onBack}
-          className="w-11 h-11 rounded-full glass-button flex items-center justify-center text-white active:scale-90 transition-transform"
+          className="w-12 h-12 rounded-full bg-white/5 backdrop-blur-xl flex items-center justify-center text-white border border-white/20 shadow-[0_4px_15px_rgba(0,0,0,0.3)] transition-colors"
         >
           <ArrowLeft size={24} />
-        </button>
-        <h2 className="text-2xl font-bold tracking-tight">
+        </motion.button>
+        <h2 className="text-3xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-white/60 drop-shadow-sm">
           {step === 'shape'  && 'Formato'}
-          {step === 'color'  && 'Cor'}
-          {step === 'result' && 'Resultado 💅'}
+          {step === 'color'  && 'Cores'}
+          {step === 'result' && 'Resultado'}
         </h2>
-        <div className="w-11" />
-      </div>
+        <div className="w-12" />
+      </motion.div>
 
-      {/* Área de Preview / Canvas */}
-      <div className="w-full h-[42vh] min-h-[280px] glass-panel mb-6 relative overflow-hidden flex items-center justify-center border-white/5">
+      {/* Preview / Canvas Area */}
+      <motion.div 
+        layoutId="preview-container"
+        className="w-full h-[45vh] min-h-[300px] bg-white/5 backdrop-blur-2xl rounded-[2.5rem] mb-8 relative overflow-hidden flex items-center justify-center border border-white/10 shadow-[inset_0_0_40px_rgba(255,255,255,0.02),_0_15px_40px_rgba(0,0,0,0.4)]"
+      >
+        {/* Subtle internal glow */}
+        <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none"></div>
 
-        {/* Imagem original (fase shape/color) */}
-        {step !== 'result' && previewUrl && (
-          <img
-            src={previewUrl}
-            alt="Sua mão"
-            className="w-full h-full object-contain opacity-90"
-          />
-        )}
+        <AnimatePresence mode="wait">
+          {step !== 'result' && previewUrl && (
+            <motion.img
+              key="preview-img"
+              initial={{ scale: 1.1, filter: 'blur(10px)', opacity: 0 }}
+              animate={{ scale: 1, filter: 'blur(0px)', opacity: 1 }}
+              exit={{ scale: 0.9, filter: 'blur(10px)', opacity: 0 }}
+              transition={{ duration: 0.6 }}
+              src={previewUrl}
+              alt="Sua mão"
+              className="w-full h-full object-contain drop-shadow-2xl"
+            />
+          )}
 
-        {/* Canvas com unhas pintadas (fase result) */}
-        {step === 'result' && segResult && previewUrl && activeColor && (
-          <NailCanvas
-            ref={canvasRef}
-            imageSrc={previewUrl}
-            nails={segResult.nails}
-            colorHex={activeColor.hex}
-            imageWidth={segResult.imageWidth}
-            imageHeight={segResult.imageHeight}
-          />
-        )}
+          {step === 'result' && segResult && previewUrl && activeColor && (
+            <motion.div
+              key="result-canvas"
+              initial={{ opacity: 0, filter: 'blur(10px)' }}
+              animate={{ opacity: 1, filter: 'blur(0px)' }}
+              className="w-full h-full"
+            >
+              <NailCanvas
+                ref={canvasRef}
+                imageSrc={previewUrl}
+                nails={segResult.nails}
+                colorHex={activeColor.hex}
+                imageWidth={segResult.imageWidth}
+                imageHeight={segResult.imageHeight}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {/* Loading */}
+        {/* Loading Overlay */}
         <AnimatePresence>
           {isProcessing && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-background/90 backdrop-blur-md flex flex-col items-center justify-center z-20 gap-4"
+              initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
+              animate={{ opacity: 1, backdropFilter: 'blur(20px)' }}
+              exit={{ opacity: 0, backdropFilter: 'blur(0px)' }}
+              className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center z-30"
             >
-              <div className="relative">
-                <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl animate-ping" />
-                <Loader2 className="w-14 h-14 text-primary animate-spin relative z-10" />
+              <div className="relative flex items-center justify-center">
+                {/* Liquid spinner rings */}
+                <motion.div 
+                  animate={{ rotate: 360, scale: [1, 1.2, 1] }} 
+                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                  className="absolute w-24 h-24 rounded-full border-t-2 border-primary border-opacity-80"
+                />
+                <motion.div 
+                  animate={{ rotate: -360, scale: [1.2, 1, 1.2] }} 
+                  transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                  className="absolute w-20 h-20 rounded-full border-b-2 border-accent border-opacity-80"
+                />
+                <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl animate-pulse" />
+                <Sparkles className="w-8 h-8 text-white relative z-10 animate-pulse" />
               </div>
-              <p className="text-primary font-bold text-base tracking-widest animate-pulse uppercase">
+              <motion.p 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="text-white mt-8 font-semibold text-lg tracking-widest uppercase bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent"
+              >
                 {statusMsg}
-              </p>
+              </motion.p>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Erro */}
+        {/* Error Overlay */}
         <AnimatePresence>
           {error && (
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              className="absolute bottom-4 left-4 right-4 bg-red-500/90 backdrop-blur-md p-4 rounded-xl z-20 shadow-2xl"
+              initial={{ opacity: 0, y: 20, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.9 }}
+              className="absolute bottom-6 left-6 right-6 bg-red-500/20 backdrop-blur-3xl p-5 rounded-3xl z-40 border border-red-500/50 shadow-[0_10px_40px_rgba(255,0,0,0.2)]"
             >
-              <div className="flex items-start gap-3">
-                <AlertTriangle size={18} className="text-white mt-0.5 shrink-0" />
-                <div className="flex-1">
-                  <p className="text-sm text-white font-medium leading-tight">{error}</p>
-                </div>
-                <button onClick={() => setError(null)} className="text-white/60 hover:text-white text-lg leading-none">✕</button>
+              <div className="flex items-start gap-4">
+                <AlertTriangle size={24} className="text-red-400 shrink-0" />
+                <p className="text-sm text-white/90 font-medium leading-relaxed flex-1">{error}</p>
+                <button 
+                  onClick={() => setError(null)} 
+                  className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/20 transition-colors"
+                >
+                  ✕
+                </button>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+      </motion.div>
 
-      {/* Controles */}
-      <div className="flex-1 flex flex-col">
+      {/* Controls */}
+      <div className="flex-1 flex flex-col relative z-20">
         <AnimatePresence mode="wait">
 
-          {/* Passo 1: Formato */}
+          {/* Step 1: Shape */}
           {step === 'shape' && (
             <motion.div
               key="shape"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
+              variants={containerVariants}
+              initial="hidden"
+              animate="show"
+              exit={{ opacity: 0, x: -30, transition: { duration: 0.3 } }}
               className="flex flex-col flex-1"
             >
               <div className="grid grid-cols-3 gap-4 mb-8">
                 {SHAPES.map((shape) => (
-                  <button
+                  <motion.button
+                    variants={itemVariants}
+                    whileHover={{ scale: 1.05, y: -5 }}
+                    whileTap={{ scale: 0.95 }}
                     key={shape.id}
                     onClick={() => setSelectedShape(shape.id)}
-                    className={`flex flex-col items-center justify-center py-6 rounded-3xl border-2 transition-all duration-300 active:scale-95 ${
+                    className={`relative overflow-hidden flex flex-col items-center justify-center py-8 rounded-[2rem] border transition-colors duration-300 ${
                       selectedShape === shape.id
-                        ? 'bg-primary/20 border-primary text-white shadow-neon-blue'
-                        : 'glass-panel border-white/5 text-white/40 hover:bg-white/5'
+                        ? 'bg-primary/20 border-primary text-white shadow-[0_0_30px_rgba(0,240,255,0.3)]'
+                        : 'bg-white/5 backdrop-blur-xl border-white/10 text-white/50 hover:bg-white/10 hover:text-white/80'
                     }`}
                   >
-                    <span className="text-3xl mb-2">{shape.icon}</span>
-                    <span className="text-xs font-bold uppercase tracking-wider">{shape.name}</span>
-                  </button>
+                    {selectedShape === shape.id && (
+                      <motion.div layoutId="shape-glow" className="absolute inset-0 bg-gradient-to-b from-primary/30 to-transparent" />
+                    )}
+                    <span className="text-4xl mb-3 relative z-10 drop-shadow-lg">{shape.icon}</span>
+                    <span className="text-xs font-bold uppercase tracking-wider relative z-10">{shape.name}</span>
+                  </motion.button>
                 ))}
               </div>
 
               <div className="mt-auto">
-                <button
+                <motion.button
+                  whileHover={{ scale: selectedShape ? 1.02 : 1 }}
+                  whileTap={{ scale: selectedShape ? 0.98 : 1 }}
                   onClick={handleApplyShape}
                   disabled={!selectedShape}
-                  className="w-full btn-primary py-4 text-lg font-bold flex items-center justify-center gap-3 disabled:opacity-40"
+                  className="w-full relative overflow-hidden py-5 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 text-white text-xl font-bold flex items-center justify-center gap-3 disabled:opacity-30 disabled:cursor-not-allowed shadow-[0_8px_32px_rgba(0,0,0,0.3)]"
                 >
-                  <Sparkles size={22} />
-                  Continuar para Cores
-                </button>
+                  {selectedShape && (
+                    <motion.div 
+                      initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                      className="absolute inset-0 bg-gradient-to-r from-primary/40 to-accent/40" 
+                    />
+                  )}
+                  <span className="relative z-10 flex items-center gap-3">
+                    <Sparkles size={24} /> Continuar
+                  </span>
+                </motion.button>
               </div>
             </motion.div>
           )}
 
-          {/* Passo 2: Cor */}
+          {/* Step 2: Color */}
           {step === 'color' && (
             <motion.div
               key="color"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
+              variants={containerVariants}
+              initial="hidden"
+              animate="show"
+              exit={{ opacity: 0, x: -30, transition: { duration: 0.3 } }}
               className="flex flex-col flex-1"
             >
-              <div className="grid grid-cols-3 gap-4 mb-8">
+              <div className="grid grid-cols-3 gap-5 mb-8">
                 {COLORS.map((color) => (
-                  <button
+                  <motion.button
+                    variants={itemVariants}
+                    whileHover={{ scale: 1.1, rotate: Math.random() * 4 - 2 }}
+                    whileTap={{ scale: 0.9 }}
                     key={color.id}
                     onClick={() => setSelectedColor(color.id)}
-                    className={`h-20 rounded-3xl flex items-center justify-center transition-all duration-300 relative active:scale-90 border-2 ${
-                      selectedColor === color.id ? 'border-white scale-105 z-10' : 'border-transparent'
-                    }`}
+                    className="group relative h-24 rounded-[2rem] flex items-center justify-center transition-all duration-300 shadow-[0_8px_20px_rgba(0,0,0,0.4)]"
                     style={{ backgroundColor: color.hex }}
                   >
+                    {/* Glassy reflection */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-50 rounded-[2rem]"></div>
+                    
                     {selectedColor === color.id && (
-                      <div className="absolute inset-[-8px] rounded-[2rem] border-2 border-white/30" />
+                      <motion.div 
+                        layoutId="color-outline"
+                        className="absolute inset-[-6px] rounded-[2.3rem] border-[3px] border-white shadow-[0_0_20px_rgba(255,255,255,0.6)]" 
+                      />
                     )}
                     <span
-                      className={`text-[10px] font-bold uppercase tracking-tighter ${
-                        ['white', 'nude'].includes(color.id) ? 'text-black/60' : 'text-white/70'
+                      className={`relative z-10 text-[11px] font-black uppercase tracking-tighter drop-shadow-md ${
+                        ['white', 'nude'].includes(color.id) ? 'text-black/80' : 'text-white'
                       }`}
                     >
                       {color.name}
                     </span>
-                  </button>
+                  </motion.button>
                 ))}
               </div>
 
               <div className="mt-auto">
-                <button
+                <motion.button
+                  whileHover={{ scale: (!selectedColor || isProcessing) ? 1 : 1.02 }}
+                  whileTap={{ scale: (!selectedColor || isProcessing) ? 1 : 0.98 }}
                   onClick={handlePaint}
                   disabled={!selectedColor || isProcessing}
-                  className="w-full btn-primary py-4 text-lg font-bold flex items-center justify-center gap-3 disabled:opacity-40"
+                  className="w-full relative overflow-hidden py-5 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 text-white text-xl font-bold flex items-center justify-center gap-3 disabled:opacity-30 disabled:cursor-not-allowed shadow-[0_8px_32px_rgba(0,0,0,0.3)] group"
                 >
-                  <Palette size={22} />
-                  Pintar Unhas
-                </button>
+                  {selectedColor && !isProcessing && (
+                    <motion.div 
+                      className="absolute inset-0"
+                      style={{ backgroundColor: activeColor?.hex, opacity: 0.5 }}
+                    />
+                  )}
+                  <span className="relative z-10 flex items-center gap-3 drop-shadow-lg">
+                    <Palette size={24} /> Transformar Unhas
+                  </span>
+                </motion.button>
               </div>
             </motion.div>
           )}
 
-          {/* Passo 3: Resultado */}
+          {/* Step 3: Result */}
           {step === 'result' && (
             <motion.div
               key="result"
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0, transition: { type: "spring" as const, bounce: 0.4 } }}
               className="flex flex-col flex-1"
             >
-              <div className="mt-auto pt-4 flex gap-3">
-                <button
+              <div className="mt-auto pt-4 flex gap-4">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => { setStep('color'); setSegResult(null); }}
-                  className="flex-1 glass-button py-3 text-white/80 font-medium"
+                  className="flex-1 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl py-4 text-white font-semibold text-lg shadow-[0_8px_32px_rgba(0,0,0,0.2)]"
                 >
-                  Trocar Cor
-                </button>
-                <button
+                  Voltar
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(0,240,255,0.4)" }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={handleSave}
-                  className="flex-1 btn-primary py-3 font-bold"
+                  className="flex-[2] relative overflow-hidden rounded-2xl py-4 text-white font-bold text-lg border border-white/30 shadow-[0_8px_32px_rgba(0,0,0,0.3)]"
                 >
-                  💾 Salvar
-                </button>
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/60 to-accent/60"></div>
+                  <span className="relative z-10 flex items-center justify-center gap-2">
+                    <Download size={22} /> Salvar Foto
+                  </span>
+                </motion.button>
               </div>
             </motion.div>
           )}
