@@ -87,7 +87,7 @@ vec4 effect(vec2 screenSize, vec2 screen_coords) {
     vec2 mid = (screenSize.xy / length(screenSize.xy)) / 2.0;
     uv = (vec2(uv_len * cos(new_pixel_angle) + mid.x, uv_len * sin(new_pixel_angle) + mid.y) - mid);
     
-    uv *= 30.0;
+    uv *= 2.0;
     float baseSpeed = iTime * uSpinSpeed;
     speed = baseSpeed + mouseInfluence * 2.0;
     

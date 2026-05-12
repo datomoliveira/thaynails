@@ -30,11 +30,11 @@ function App() {
       <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none opacity-80">
         <Balatro
           spinRotation={-2}
-          spinSpeed={7}
+          spinSpeed={1.5}
           color1="#DE443B"
           color2="#006BB4"
           color3="#162325"
-          contrast={3}
+          contrast={4}
           lighting={0.4}
           spinAmount={0.25}
           pixelFilter={700}
