@@ -37,7 +37,7 @@ export default {
         }
 
         const formData = await request.formData();
-        const imageFile = formData.get('image') as File | Blob;
+        const imageFile = formData.get('image') as unknown as File | Blob;
         const shape = formData.get('shape') as string;
         const color = formData.get('color') as string;
 
