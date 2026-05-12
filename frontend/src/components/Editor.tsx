@@ -79,7 +79,7 @@ export default function Editor({
       setStatusMsg('Analisando contornos...');
       const img = await loadImage(previewUrl);
 
-      setStatusMsg('Aplicando IA Vision...');
+      setStatusMsg('Sincronizando detalhes...');
       const result = await segmentNails(img);
 
       if (!result || result.nails.length === 0) {
@@ -87,7 +87,7 @@ export default function Editor({
         return;
       }
 
-      setStatusMsg('Renderizando camadas...');
+      setStatusMsg('Finalizando simulação...');
       setSegResult(result);
       setStep('result');
     } catch (e: any) {

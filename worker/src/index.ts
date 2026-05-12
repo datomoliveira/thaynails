@@ -42,7 +42,7 @@ export default {
         const color = formData.get('color') as string;
 
         if (!imageFile) {
-          return new Response(JSON.stringify({ error: 'Image is required' }), { status: 400, headers: corsHeaders });
+          return new Response(JSON.stringify({ error: 'A imagem é obrigatória' }), { status: 400, headers: corsHeaders });
         }
 
         const imageBuffer = await imageFile.arrayBuffer();
@@ -58,13 +58,13 @@ export default {
             upsert: false
           });
 
-        if (uploadError) throw new Error(`Supabase Error: ${uploadError.message}`);
+        if (uploadError) throw new Error(`Erro de Armazenamento: ${uploadError.message}`);
         
         const { data: { publicUrl } } = supabase.storage.from('nail-images').getPublicUrl(fileName);
 
-        // 2. Call Gemini for high-precision coordinates
+        // 2. Call Engine for high-precision coordinates
         const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); // Use 1.5 flash for stability
         
         const prompt = `Task: Nail Segmentation. 
         Detect the 5 nails in the image. They should be aligned with the template slots.
@@ -91,7 +91,7 @@ export default {
 
       } catch (error: any) {
         console.error("Worker Error:", error.message);
-        return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: corsHeaders });
+        return new Response(JSON.stringify({ error: "Falha no processamento. Tente novamente." }), { status: 500, headers: corsHeaders });
       }
     }
 

@@ -69,33 +69,50 @@ function App() {
                 className="mb-12 relative"
               >
                 <div className="text-[0.7rem] font-bold tracking-[0.4em] uppercase text-white/40 mb-4 drop-shadow-sm">
-                  The Future of Beauty
+                  O Futuro da Beleza
                 </div>
-                <h1 className="text-7xl font-black tracking-tighter text-white leading-[0.8] mb-2 drop-shadow-2xl">
+                <h1 className="text-7xl font-black tracking-tighter text-white leading-[1.1] mb-6 drop-shadow-2xl py-2">
                   THAY<br/>
                   <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/20">NAILS</span>
                 </h1>
                 <div className="h-[1px] w-12 bg-white/20 mx-auto mt-6"></div>
               </motion.div>
               
-              <motion.p 
-                className="text-white/60 mb-16 text-lg font-light leading-relaxed tracking-wider max-w-[280px]"
+              <motion.div 
+                className="text-white/60 mb-16 text-lg font-light leading-relaxed tracking-wide max-w-[320px]"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.4, duration: 1 }}
               >
-                Elevate your style with <br/> 
-                <span className="text-white/90">Precision AI Simulation</span>
-              </motion.p>
+                <p className="mb-4">
+                  Sempre em dúvida sobre qual cor escolher? 
+                  <span className="text-white/90 block mt-1 font-medium">Visualize agora a cor perfeita para você.</span>
+                </p>
+                
+                <div className="flex flex-col items-start text-left gap-3 mt-8 text-sm opacity-80 border-l border-white/10 pl-6 mx-auto w-fit">
+                  <div className="flex items-center gap-3">
+                    <span className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold">1</span>
+                    <span>Tire uma foto das suas mãos</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold">2</span>
+                    <span>Escolha cores e formatos</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold">3</span>
+                    <span>Veja o resultado real</span>
+                  </div>
+                </div>
+              </motion.div>
               
               <motion.button 
                 whileHover={{ scale: 1.02, backgroundColor: "rgba(255,255,255,0.15)" }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setCurrentTab('upload')}
-                className="group relative w-full max-w-[260px] py-5 rounded-full bg-white/10 backdrop-blur-2xl border border-white/20 shadow-[0_20px_40px_rgba(0,0,0,0.4)] text-sm font-bold uppercase tracking-[0.2em] transition-all overflow-hidden"
+                className="group relative w-full max-w-[280px] py-5 rounded-full bg-white/10 backdrop-blur-2xl border border-white/20 shadow-[0_20px_40px_rgba(0,0,0,0.4)] text-sm font-bold uppercase tracking-[0.2em] transition-all overflow-hidden"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <span className="relative z-10">Get Started</span>
+                <span className="relative z-10 text-white">Começar Simulação</span>
               </motion.button>
 
               <motion.div 
@@ -105,7 +122,7 @@ function App() {
                 className="mt-20 flex flex-col items-center gap-2 text-white/20"
               >
                 <div className="w-[1px] h-12 bg-gradient-to-b from-white/20 to-transparent"></div>
-                <span className="text-[0.6rem] uppercase tracking-widest">Scroll to Explore</span>
+                <span className="text-[0.6rem] uppercase tracking-widest">Role para Explorar</span>
               </motion.div>
             </motion.div>
           )}
