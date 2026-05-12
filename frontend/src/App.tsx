@@ -34,7 +34,7 @@ function App() {
           color1="#DE443B"
           color2="#006BB4"
           color3="#162325"
-          contrast={3.5}
+          contrast={3}
           lighting={0.4}
           spinAmount={0.25}
           pixelFilter={700}
@@ -57,51 +57,51 @@ function App() {
               exit="exit"
               className="flex flex-col items-center justify-center flex-1 text-center"
             >
-              <motion.div 
-                className="w-32 h-32 mb-10 relative"
-                initial={{ scale: 0.8, opacity: 0, rotate: -20 }}
-                animate={{ scale: 1, opacity: 1, rotate: 0 }}
-                transition={{ duration: 0.8, type: "spring" as const, bounce: 0.5 }}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 1, ease: "easeOut" }}
+                className="mb-12 relative"
               >
-                <div className="absolute inset-0 bg-primary/40 rounded-[2rem] blur-2xl animate-pulse"></div>
-                <div className="relative w-full h-full bg-white/5 backdrop-blur-2xl rounded-[2.5rem] border border-white/20 shadow-[inset_0_0_20px_rgba(255,255,255,0.1),_0_8px_32px_rgba(0,0,0,0.5)] flex items-center justify-center text-white overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-tr before:from-white/10 before:to-transparent">
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                  >
-                    <Sparkles size={56} strokeWidth={1.5} className="drop-shadow-[0_0_25px_rgba(255,255,255,1)]" />
-                  </motion.div>
+                <div className="text-[0.7rem] font-bold tracking-[0.4em] uppercase text-white/40 mb-4 drop-shadow-sm">
+                  The Future of Beauty
                 </div>
+                <h1 className="text-7xl font-black tracking-tighter text-white leading-[0.8] mb-2 drop-shadow-2xl">
+                  THAY<br/>
+                  <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/20">NAILS</span>
+                </h1>
+                <div className="h-[1px] w-12 bg-white/20 mx-auto mt-6"></div>
               </motion.div>
-
-              <motion.h1 
-                className="text-6xl font-black mb-4 tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-white/40 drop-shadow-lg"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.6 }}
-              >
-                ThayNails
-              </motion.h1>
               
               <motion.p 
-                className="text-white/70 mb-14 text-xl font-light leading-relaxed tracking-wide"
+                className="text-white/60 mb-16 text-lg font-light leading-relaxed tracking-wider max-w-[280px]"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.3, duration: 0.8 }}
+                transition={{ delay: 0.4, duration: 1 }}
               >
-                Beleza elevada com <br/> <strong className="text-white font-semibold">Simulação Realista</strong>.
+                Elevate your style with <br/> 
+                <span className="text-white/90">Precision AI Simulation</span>
               </motion.p>
               
               <motion.button 
-                whileHover={{ scale: 1.05, boxShadow: "0 0 40px rgba(0, 240, 255, 0.4)" }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.02, backgroundColor: "rgba(255,255,255,0.15)" }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => setCurrentTab('upload')}
-                className="relative overflow-hidden w-full max-w-[300px] flex items-center justify-center gap-3 py-5 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.3)] text-xl font-medium"
+                className="group relative w-full max-w-[260px] py-5 rounded-full bg-white/10 backdrop-blur-2xl border border-white/20 shadow-[0_20px_40px_rgba(0,0,0,0.4)] text-sm font-bold uppercase tracking-[0.2em] transition-all overflow-hidden"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-primary/30 to-accent/30 opacity-0 hover:opacity-100 transition-opacity duration-500"></div>
-                <Camera size={26} className="text-white" />
-                Começar
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <span className="relative z-10">Get Started</span>
               </motion.button>
+
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1, duration: 1 }}
+                className="mt-20 flex flex-col items-center gap-2 text-white/20"
+              >
+                <div className="w-[1px] h-12 bg-gradient-to-b from-white/20 to-transparent"></div>
+                <span className="text-[0.6rem] uppercase tracking-widest">Scroll to Explore</span>
+              </motion.div>
             </motion.div>
           )}
 
