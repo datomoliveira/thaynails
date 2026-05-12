@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Upload, Sparkles, Heart } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Ballpit from './components/Ballpit';
+import SoftAurora from './components/SoftAurora';
 import Editor from './components/Editor';
 
 function App() {
@@ -26,20 +26,26 @@ function App() {
   return (
     <div className="min-h-screen relative flex flex-col items-center bg-[#050505] overflow-hidden text-white font-sans">
       
-      {/* Dynamic Ballpit Background */}
-      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none opacity-80 flex items-center justify-center">
-        <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-          <Ballpit
-            count={100}
-            gravity={0.5}
-            friction={0.9975}
-            wallBounce={0.95}
-            followCursor
-            colors={["#5227FF","#7cff67","#ff6b6b"]}
-          />
-        </div>
+      {/* Dynamic SoftAurora Background */}
+      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+        <SoftAurora
+          speed={0.6}
+          scale={1.5}
+          brightness={1}
+          color1="#f7f7f7"
+          color2="#e100ff"
+          noiseFrequency={2.5}
+          noiseAmplitude={1}
+          bandHeight={0.5}
+          bandSpread={1}
+          octaveDecay={0.1}
+          layerOffset={0}
+          colorSpeed={1}
+          enableMouseInteraction
+          mouseInfluence={0.25}
+        />
         {/* Subtle dark overlay to ensure text readability */}
-        <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
+        <div className="absolute inset-0 bg-black/20 backdrop-blur-[1px]"></div>
       </div>
 
       {/* Main Content Area */}
