@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Camera, Upload, Sparkles, Heart } from 'lucide-react';
+import { Upload, Sparkles, Heart } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Ballpit from './components/Ballpit';
 import Editor from './components/Editor';
-import Balatro from './components/Balatro';
 
 function App() {
   const [currentTab, setCurrentTab] = useState('home');
@@ -26,21 +26,20 @@ function App() {
   return (
     <div className="min-h-screen relative flex flex-col items-center bg-[#050505] overflow-hidden text-white font-sans">
       
-      {/* Dynamic Balatro Background */}
-      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none opacity-80">
-        <Balatro
-          spinRotation={-2}
-          spinSpeed={1.5}
-          color1="#DE443B"
-          color2="#006BB4"
-          color3="#162325"
-          contrast={4}
-          lighting={0.4}
-          spinAmount={0.25}
-          pixelFilter={700}
-        />
+      {/* Dynamic Ballpit Background */}
+      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none opacity-80 flex items-center justify-center">
+        <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+          <Ballpit
+            count={100}
+            gravity={0.5}
+            friction={0.9975}
+            wallBounce={0.95}
+            followCursor
+            colors={["#5227FF","#7cff67","#ff6b6b"]}
+          />
+        </div>
         {/* Subtle dark overlay to ensure text readability */}
-        <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px]"></div>
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
       </div>
 
       {/* Main Content Area */}
