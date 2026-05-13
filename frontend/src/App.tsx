@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Upload, Sparkles, Heart } from 'lucide-react';
+import { Upload, Sparkles, Heart, Palette } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SoftAurora from './components/SoftAurora';
 import Editor from './components/Editor';
