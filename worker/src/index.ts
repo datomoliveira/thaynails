@@ -64,8 +64,8 @@ export default {
 
         // 2. Call Engine for high-precision coordinates
         const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
-        // Using 2.0 Flash for superior spatial understanding
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" }); 
+        // Switching to 2.5 Flash as requested for maximum precision
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }); 
         
         const prompt = `Task: Anatomically Perfect Nail Segmentation.
         You are a medical-grade vision assistant. Detect the 5 fingernails with extreme precision.
