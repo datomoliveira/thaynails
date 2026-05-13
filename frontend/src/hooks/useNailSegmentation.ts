@@ -95,7 +95,6 @@ export function useNailSegmentation() {
         ([finger, [tipIdx, midIdx, baseIdx]]) => {
           const tip  = landmarks[tipIdx];
           const mid  = landmarks[midIdx];
-          const base = landmarks[baseIdx];
 
           // Vetor da direção do dedo (do meio da falange para a ponta)
           const dirX = tip.x - mid.x;
