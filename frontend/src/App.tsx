@@ -71,7 +71,7 @@ function App() {
                 <div className="text-[0.7rem] font-bold tracking-[0.4em] uppercase text-white/40 mb-4 drop-shadow-sm">
                   O Futuro da Beleza
                 </div>
-                <h1 className="text-7xl font-black tracking-tighter text-white leading-[1.1] mb-6 drop-shadow-2xl py-2">
+                <h1 className="text-7xl sm:text-8xl font-black tracking-tighter text-white leading-[1.1] mb-6 drop-shadow-2xl py-4 overflow-visible">
                   THAY<br/>
                   <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/20">NAILS</span>
                 </h1>
@@ -88,21 +88,6 @@ function App() {
                   Sempre em dúvida sobre qual cor escolher? 
                   <span className="text-white/90 block mt-1 font-medium">Visualize agora a cor perfeita para você.</span>
                 </p>
-                
-                <div className="flex flex-col items-start text-left gap-3 mt-8 text-sm opacity-80 border-l border-white/10 pl-6 mx-auto w-fit">
-                  <div className="flex items-center gap-3">
-                    <span className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold">1</span>
-                    <span>Tire uma foto das suas mãos</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold">2</span>
-                    <span>Escolha cores e formatos</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold">3</span>
-                    <span>Veja o resultado real</span>
-                  </div>
-                </div>
               </motion.div>
               
               <motion.button 
@@ -115,11 +100,63 @@ function App() {
                 <span className="relative z-10 text-white">Começar Simulação</span>
               </motion.button>
 
+              {/* Process Section */}
+              <motion.div 
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="mt-32 w-full flex flex-col items-center gap-16 pb-20"
+              >
+                <div className="text-center">
+                  <h3 className="text-2xl font-bold mb-4 tracking-tight">Como funciona</h3>
+                  <p className="text-white/40 text-sm max-w-[240px] mx-auto">Transformação em três passos simples e sem esforço.</p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-12 w-full">
+                  <StepItem 
+                    icon={<Upload className="text-primary" size={32} />}
+                    title="1. Capture"
+                    desc="Tire uma foto clara de suas mãos em qualquer iluminação."
+                  />
+                  <StepItem 
+                    icon={<Palette className="text-accent" size={32} />}
+                    title="2. Escolha"
+                    desc="Explore dezenas de tons exclusivos e formatos modernos."
+                  />
+                  <StepItem 
+                    icon={<Sparkles className="text-white" size={32} />}
+                    title="3. Visualize"
+                    desc="Veja o resultado final aplicado perfeitamente em segundos."
+                  />
+                </div>
+
+                <div className="mt-8 w-full">
+                  <p className="text-[0.6rem] uppercase tracking-widest text-white/30 mb-6 text-center">Resultado Esperado</p>
+                  <div className="relative aspect-[4/5] rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl group">
+                    <img 
+                      src="/nail_simulation_result_mockup_1778631005146.png" 
+                      alt="Resultado da Simulação" 
+                      className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-700"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                    <div className="absolute bottom-6 left-6 right-6 flex justify-between items-end">
+                      <div>
+                        <p className="text-xs font-bold text-white/60 uppercase tracking-tighter">Cor Escolhida</p>
+                        <p className="text-lg font-bold">Magenta Luxury</p>
+                      </div>
+                      <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center">
+                        <div className="w-4 h-4 rounded-full bg-[#e100ff] shadow-[0_0_10px_rgba(225,0,255,0.8)]"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
               <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1, duration: 1 }}
-                className="mt-20 flex flex-col items-center gap-2 text-white/20"
+                className="mt-12 flex flex-col items-center gap-2 text-white/20"
               >
                 <div className="w-[1px] h-12 bg-gradient-to-b from-white/20 to-transparent"></div>
                 <span className="text-[0.6rem] uppercase tracking-widest">Role para Explorar</span>
@@ -194,17 +231,17 @@ function App() {
         initial={{ y: 100 }}
         animate={{ y: 0 }}
         transition={{ type: "spring" as const, bounce: 0, duration: 0.8 }}
-        className="fixed bottom-0 left-0 right-0 z-50 bg-white/5 backdrop-blur-[40px] rounded-t-[3rem] border-t border-white/20 flex justify-around items-center max-w-md mx-auto w-full shadow-[0_-10px_50px_rgba(0,0,0,0.6)]"
-        style={{ paddingBottom: 'calc(var(--safe-area-bottom) + 1.5rem)', paddingTop: '1.5rem' }}
+        className="fixed bottom-0 left-0 right-0 z-50 bg-white/5 backdrop-blur-[40px] rounded-t-[2rem] border-t border-white/20 flex justify-around items-center max-w-md mx-auto w-full shadow-[0_-10px_50px_rgba(0,0,0,0.6)]"
+        style={{ paddingBottom: 'calc(var(--safe-area-bottom) + 0.8rem)', paddingTop: '0.8rem' }}
       >
         <NavButton 
-          icon={<Sparkles size={28} />} 
+          icon={<Sparkles size={22} />} 
           label="Simular" 
           active={['home', 'upload', 'editor'].includes(currentTab)} 
           onClick={() => setCurrentTab('home')} 
         />
         <NavButton 
-          icon={<Heart size={28} />} 
+          icon={<Heart size={22} />} 
           label="Salvos" 
           active={currentTab === 'favorites'} 
           onClick={() => setCurrentTab('favorites')} 
@@ -214,20 +251,34 @@ function App() {
   );
 }
 
+function StepItem({ icon, title, desc }: { icon: React.ReactNode, title: string, desc: string }) {
+  return (
+    <div className="flex items-start gap-6">
+      <div className="w-14 h-14 rounded-2xl bg-white/5 backdrop-blur-md flex items-center justify-center border border-white/10 shrink-0 shadow-lg">
+        {icon}
+      </div>
+      <div className="flex flex-col gap-1">
+        <h4 className="text-lg font-bold tracking-tight">{title}</h4>
+        <p className="text-white/40 text-xs leading-relaxed">{desc}</p>
+      </div>
+    </div>
+  );
+}
+
 function NavButton({ icon, label, active, onClick }: { icon: React.ReactNode, label: string, active: boolean, onClick: () => void }) {
   return (
     <motion.button 
       whileTap={{ scale: 0.9 }}
       onClick={onClick}
-      className={`relative flex flex-col items-center gap-2 transition-colors duration-300 ${active ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
+      className={`relative flex flex-col items-center gap-1.5 transition-colors duration-300 ${active ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
     >
       {active && (
-        <motion.div layoutId="nav-indicator" className="absolute -top-4 w-12 h-1 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.8)]" />
+        <motion.div layoutId="nav-indicator" className="absolute -top-2 w-8 h-0.5 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.8)]" />
       )}
       <motion.div animate={{ scale: active ? 1.1 : 1 }} transition={{ type: "spring" as const, bounce: 0.5 }}>
         {icon}
       </motion.div>
-      <span className="text-xs font-semibold tracking-wider">{label}</span>
+      <span className="text-[10px] font-bold uppercase tracking-wider">{label}</span>
     </motion.button>
   );
 }
