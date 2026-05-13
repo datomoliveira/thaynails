@@ -61,7 +61,7 @@ export function useNailSegmentation() {
           delegate: 'GPU',
         },
         runningMode: 'IMAGE',
-        numHands: 2,
+        numHands: 1,
       });
     } catch (e: any) {
       setError(`Falha ao carregar modelo: ${e.message}`);
@@ -97,36 +97,36 @@ export function useNailSegmentation() {
           const mid  = landmarks[midIdx];
           const base = landmarks[baseIdx];
 
-          // Vetor da direção do dedo (de base → ponta)
-          const dirX = tip.x - base.x;
-          const dirY = tip.y - base.y;
+          // Vetor da direção do dedo (do meio da falange para a ponta)
+          const dirX = tip.x - mid.x;
+          const dirY = tip.y - mid.y;
           const len  = Math.sqrt(dirX * dirX + dirY * dirY) || 0.001;
 
-          // Perpendicular normalizado
+          // Vetor perpendicular (largura)
           const perpX = -dirY / len;
           const perpY =  dirX / len;
 
-          // Largura da unha = ~40% do comprimento da falange
-          const halfWidth = (len * W) * 0.40;
+          // Parâmetros anatômicos baseados no tipo do dedo
+          const W_factor = finger === 'thumb' ? 0.45 : 0.38;
+          const halfWidth = (len * W) * W_factor;
+          const nailLength = (len * H) * 0.9;
 
-          // 4 pontos base + arredondamento na ponta (8 pontos no total)
-          const tipX  = tip.x  * W;
-          const tipY  = tip.y  * H;
-          const midX  = mid.x  * W;
-          const midY  = mid.y  * H;
+          // Centro da unha (entre a ponta e a primeira articulação)
+          const centerX = (tip.x * W + mid.x * W) / 2;
+          const centerY = (tip.y * H + mid.y * H) / 2;
 
-          const points = [
-            // Base esquerda
-            { x: midX - perpX * halfWidth, y: midY - perpY * halfWidth * (H / W) },
-            // Ponta esquerda
-            { x: tipX - perpX * halfWidth * 0.7, y: tipY - perpY * halfWidth * 0.7 * (H / W) },
-            // Ponta centro
-            { x: tipX, y: tipY - (len * H * 0.15) },
-            // Ponta direita
-            { x: tipX + perpX * halfWidth * 0.7, y: tipY + perpY * halfWidth * 0.7 * (H / W) },
-            // Base direita
-            { x: midX + perpX * halfWidth, y: midY + perpY * halfWidth * (H / W) },
-          ];
+          // Polígono elíptico de 16 pontos para suavidade máxima
+          const points = [];
+          for (let i = 0; i < 16; i++) {
+            const angle = (i / 15) * Math.PI * 2;
+            const rx = Math.cos(angle) * halfWidth;
+            const ry = Math.sin(angle) * nailLength * 0.5; // Ajuste de proporção
+            
+            points.push({
+              x: centerX + (rx * perpX + ry * (dirX / len)),
+              y: centerY + (rx * perpY + ry * (dirY / len))
+            });
+          }
 
           return { finger, points };
         }
