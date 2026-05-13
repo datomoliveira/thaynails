@@ -3,6 +3,7 @@ import { Upload, Sparkles, Heart, Palette } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SoftAurora from './components/SoftAurora';
 import Editor from './components/Editor';
+import heroMockup from '/hero-mockup.png';
 
 function App() {
   const [currentTab, setCurrentTab] = useState('home');
@@ -134,7 +135,7 @@ function App() {
                   <p className="text-[0.6rem] uppercase tracking-widest text-white/30 mb-6 text-center">Resultado Esperado</p>
                   <div className="relative aspect-[4/5] rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl group">
                     <img 
-                      src="/nail_simulation_result_mockup_1778631005146.png" 
+                      src={heroMockup} 
                       alt="Resultado da Simulação" 
                       className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-700"
                     />
