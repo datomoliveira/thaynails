@@ -56,41 +56,48 @@ const NailCanvas = forwardRef<NailCanvasRef, NailCanvasProps>(
         ctx.clearRect(0, 0, imageWidth, imageHeight);
         ctx.drawImage(img, 0, 0, imageWidth, imageHeight);
 
-        // ─── CAMADA 2: Cor da unha (Blend Mode "multiply") ───────────────
-        // O modo "multiply" escurece multiplicando os valores dos pixels.
-        // Isso preserva os reflexos claros da foto original (a luz passa),
-        // e tinge as áreas escuras da textura da unha. Resultado: hiper-realista.
-        ctx.globalCompositeOperation = 'multiply';
-        ctx.fillStyle = colorHex;
+        // ─── CAMADA 2: Cor da unha (Soft Mask + Blend Mode) ───────────────
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = imageWidth;
+        tempCanvas.height = imageHeight;
+        const tCtx = tempCanvas.getContext('2d')!;
 
+        // 1. Criar a máscara com bordas suaves
+        tCtx.fillStyle = colorHex;
+        tCtx.filter = 'blur(1.5px)'; // Suaviza a borda para não parecer "recortado"
+        
         nails.forEach((nail) => {
           if (nail.points.length < 3) return;
-          ctx.beginPath();
-          ctx.moveTo(nail.points[0].x, nail.points[0].y);
-          nail.points.slice(1).forEach((p) => ctx.lineTo(p.x, p.y));
-          ctx.closePath();
-          ctx.fill();
+          tCtx.beginPath();
+          tCtx.moveTo(nail.points[0].x, nail.points[0].y);
+          nail.points.slice(1).forEach((p) => tCtx.lineTo(p.x, p.y));
+          tCtx.closePath();
+          tCtx.fill();
         });
 
-        // ─── CAMADA 3: Brilho (simula top coat / gloss) ──────────────────
-        // Volta ao modo normal para desenhar um reflexo branco suave no
-        // terço superior de cada una, simulando o brilho do esmalte.
-        ctx.globalCompositeOperation = 'source-over';
+        // 2. Aplicar a cor no canvas principal usando "multiply" para realismo
+        ctx.save();
+        ctx.globalCompositeOperation = 'multiply';
+        ctx.globalAlpha = 0.85; // Leve transparência para deixar a textura passar
+        ctx.drawImage(tempCanvas, 0, 0);
+        ctx.restore();
 
+        // ─── CAMADA 3: Brilho e Reflexo (Realistic Overlay) ───────────────
+        ctx.globalCompositeOperation = 'source-over';
         nails.forEach((nail) => {
           if (nail.points.length < 3) return;
 
-          // Centro X/Y da unha
           const avgX = nail.points.reduce((s, p) => s + p.x, 0) / nail.points.length;
           const avgY = nail.points.reduce((s, p) => s + p.y, 0) / nail.points.length;
           const topY = Math.min(...nail.points.map((p) => p.y));
 
-          // Gradiente radial no topo da unha
+          // Gradiente de reflexo (simula verniz)
           const gloss = ctx.createRadialGradient(
-            avgX, topY + (avgY - topY) * 0.25, 2,
-            avgX, topY + (avgY - topY) * 0.25, (avgY - topY) * 0.6
+            avgX, topY + (avgY - topY) * 0.2, 1,
+            avgX, topY + (avgY - topY) * 0.25, (avgY - topY) * 0.8
           );
-          gloss.addColorStop(0, 'rgba(255,255,255,0.35)');
+          gloss.addColorStop(0, 'rgba(255,255,255,0.4)');
+          gloss.addColorStop(0.5, 'rgba(255,255,255,0.1)');
           gloss.addColorStop(1, 'rgba(255,255,255,0)');
 
           ctx.fillStyle = gloss;
@@ -101,10 +108,11 @@ const NailCanvas = forwardRef<NailCanvasRef, NailCanvasProps>(
           ctx.fill();
         });
 
-        // ─── BORDA SUAVE para não cortar bruscamente ─────────────────────
+        // ─── CAMADA 4: Oclusão de Borda (Depth) ──────────────────────────
+        // Adiciona uma sombra interna sutil para dar volume à unha
         ctx.globalCompositeOperation = 'source-over';
-        ctx.strokeStyle = 'rgba(0,0,0,0.08)';
-        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = 'rgba(0,0,0,0.12)';
+        ctx.lineWidth = 1;
         nails.forEach((nail) => {
           if (nail.points.length < 3) return;
           ctx.beginPath();

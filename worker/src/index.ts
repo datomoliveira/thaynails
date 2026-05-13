@@ -64,12 +64,20 @@ export default {
 
         // 2. Call Engine for high-precision coordinates
         const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); // Use 1.5 flash for stability
+        // Using 2.0 Flash for superior spatial understanding
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" }); 
         
-        const prompt = `Task: Nail Segmentation. 
-        Detect the 5 nails in the image. They should be aligned with the template slots.
-        Return ONLY a JSON with { "nails": [ { "polygon": [[y,x],...] } ] }. 
-        Use 0-1000 normalized coordinates. Be extremely precise.`;
+        const prompt = `Task: Anatomically Perfect Nail Segmentation.
+        You are a medical-grade vision assistant. Detect the 5 fingernails with extreme precision.
+        
+        For each nail:
+        1. Identify the boundary where the nail meets the skin (cuticle and lateral folds).
+        2. Trace a smooth, high-density polygon (30+ points) following ONLY the nail plate.
+        3. STRICT RULE: Do not include ANY skin. Stay 1-2 pixels INSIDE the nail boundary if unsure.
+        4. Capture the curve of the free edge and the base of the nail accurately.
+        
+        Return ONLY a JSON: { "nails": [ { "polygon": [[y,x],...] } ] }. 
+        Coordinates are 0-1000 (y,x). Order: Thumb to Pinky.`;
 
         const result = await model.generateContent([
           { text: prompt },
