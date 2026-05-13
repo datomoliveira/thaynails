@@ -181,7 +181,11 @@ const SoftAurora: React.FC<SoftAuroraProps> = ({
   useEffect(() => {
     if (!containerRef.current) return;
     const container = containerRef.current;
-    const renderer = new Renderer({ alpha: true, premultipliedAlpha: false });
+    const renderer = new Renderer({ 
+      dpr: 0.5, // Reduz resolução para aumentar performance significativamente
+      alpha: true, 
+      premultipliedAlpha: false 
+    });
     const gl = renderer.gl;
     gl.clearColor(0, 0, 0, 0);
 
