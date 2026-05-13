@@ -92,7 +92,7 @@ export function useNailSegmentation() {
       const landmarks = result.landmarks[0]; // Usa a primeira mão detectada
 
       const nails: NailPolygon[] = Object.entries(NAIL_LANDMARK_GROUPS).map(
-        ([finger, [tipIdx, midIdx, baseIdx]]) => {
+        ([finger, [tipIdx, midIdx]]) => {
           const tip  = landmarks[tipIdx];
           const mid  = landmarks[midIdx];
 
