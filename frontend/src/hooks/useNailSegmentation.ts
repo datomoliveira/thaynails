@@ -1,25 +1,10 @@
 /**
- * FASE 1 — Segmentação de Unhas via MediaPipe Hand Landmarker
- * 
- * O MediaPipe detecta 21 landmarks (pontos chave) em cada mão.
- * Usamos os pontos das falanges distais (ponta de cada dedo) para
- * construir uma máscara de precisão cirúrgica para cada unha.
- *
- * Landmarks usados por dedo:
- *  - Polegar:   4  (ponta)
- *  - Indicador: 8  (ponta)
- *  - Médio:     12 (ponta)
- *  - Anelar:    16 (ponta)
- *  - Mínimo:    20 (ponta)
- *
- *  Para construir a "região" da unha, usamos a ponta + o ponto médio
- *  da falange proximal de cada dedo para criar um polígono realista.
+ * FASE 1 — Segmentação de Unhas via MediaPipe Hand Landmarker + Geometria Avançada
  */
 
 import { useCallback, useRef, useState } from 'react';
 import { HandLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
 
-// Par de índices: [ponta, meio da falange, base da falange]
 const NAIL_LANDMARK_GROUPS: Record<string, [number, number, number]> = {
   thumb:   [4, 3, 2],
   index:   [8, 7, 6],
@@ -30,7 +15,6 @@ const NAIL_LANDMARK_GROUPS: Record<string, [number, number, number]> = {
 
 export interface NailPolygon {
   finger: string;
-  /** Pontos do polígono em pixels absolutos da imagem original */
   points: { x: number; y: number }[];
 }
 
@@ -45,10 +29,8 @@ export function useNailSegmentation() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  /** Inicializa o modelo MediaPipe (só uma vez) */
   const initModel = useCallback(async () => {
-    if (landmarkerRef.current) return; // Já inicializado
-
+    if (landmarkerRef.current) return;
     setIsLoading(true);
     try {
       const vision = await FilesetResolver.forVisionTasks(
@@ -56,8 +38,7 @@ export function useNailSegmentation() {
       );
       landmarkerRef.current = await HandLandmarker.createFromOptions(vision, {
         baseOptions: {
-          modelAssetPath:
-            'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task',
+          modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task',
           delegate: 'GPU',
         },
         runningMode: 'IMAGE',
@@ -70,18 +51,12 @@ export function useNailSegmentation() {
     }
   }, []);
 
-  /**
-   * Gera os polígonos de cada unha a partir de um HTMLImageElement.
-   * Retorna null se a mão não for detectada.
-   */
   const segmentNails = useCallback(
     async (imgElement: HTMLImageElement): Promise<SegmentationResult | null> => {
       await initModel();
       if (!landmarkerRef.current) return null;
 
-      setError(null);
       const result = landmarkerRef.current.detect(imgElement);
-
       if (!result.landmarks || result.landmarks.length === 0) {
         setError('Nenhuma mão detectada. Enquadre melhor sua mão.');
         return null;
@@ -89,41 +64,68 @@ export function useNailSegmentation() {
 
       const W = imgElement.naturalWidth;
       const H = imgElement.naturalHeight;
-      const landmarks = result.landmarks[0]; // Usa a primeira mão detectada
+      const landmarks = result.landmarks[0];
 
       const nails: NailPolygon[] = Object.entries(NAIL_LANDMARK_GROUPS).map(
-        ([finger, [tipIdx, midIdx]]) => {
-          const tip  = landmarks[tipIdx];
-          const mid  = landmarks[midIdx];
+        ([finger, [tipIdx, midIdx, baseIdx]]) => {
+          const tip = landmarks[tipIdx];
+          const mid = landmarks[midIdx];
+          const base = landmarks[baseIdx];
 
-          // Vetor da direção do dedo (do meio da falange para a ponta)
-          const dirX = tip.x - mid.x;
-          const dirY = tip.y - mid.y;
-          const len  = Math.sqrt(dirX * dirX + dirY * dirY) || 0.001;
+          // 1. Direção e Comprimento
+          const dx = tip.x - mid.x;
+          const dy = tip.y - mid.y;
+          const len = Math.sqrt(dx * dx + dy * dy) || 0.01;
+          const nx = dx / len;
+          const ny = dy / len;
+          const px = -ny;
+          const py = nx;
 
-          // Vetor perpendicular (largura)
-          const perpX = -dirY / len;
-          const perpY =  dirX / len;
+          // 2. Detecção de Lateralidade (Thumb de lado)
+          // Se o polegar está muito "fechado" em relação ao indicador, ou o vetor tip-mid está inclinado
+          let sideViewFactor = 1.0;
+          if (finger === 'thumb') {
+            const wrist = landmarks[0];
+            const distWristTip = Math.sqrt(Math.pow(tip.x - wrist.x, 2) + Math.pow(tip.y - wrist.y, 2));
+            // Se o polegar está comprimido no eixo perpendicular, ele está de lado
+            const fingerSpreading = Math.abs((landmarks[8].x - landmarks[4].x) * W);
+            if (fingerSpreading < 100) sideViewFactor = 0.6; // Comprime a largura para simular perfil
+          }
 
-          // Parâmetros anatômicos baseados no tipo do dedo
-          const W_factor = finger === 'thumb' ? 0.45 : 0.38;
-          const halfWidth = (len * W) * W_factor;
-          const nailLength = (len * H) * 0.9;
+          const width = (len * W) * (finger === 'thumb' ? 0.45 : 0.38) * sideViewFactor;
+          const height = (len * H) * 0.95;
 
-          // Centro da unha (entre a ponta e a primeira articulação)
-          const centerX = (tip.x * W + mid.x * W) / 2;
-          const centerY = (tip.y * H + mid.y * H) / 2;
+          const cx = (tip.x * W + mid.x * W) / 2;
+          const cy = (tip.y * H + mid.y * H) / 2;
 
-          // Polígono elíptico de 16 pontos para suavidade máxima
+          // 3. Gerar polígono anatômico (Borda da cutícula vs Ponta livre)
           const points = [];
-          for (let i = 0; i < 16; i++) {
-            const angle = (i / 15) * Math.PI * 2;
-            const rx = Math.cos(angle) * halfWidth;
-            const ry = Math.sin(angle) * nailLength * 0.5; // Ajuste de proporção
+          const res = 20;
+          for (let i = 0; i <= res; i++) {
+            const t = i / res;
+            const angle = t * Math.PI;
+            
+            // Lado superior (ponta da unha) - mais arredondado ou quadrado dependendo da forma
+            // Aqui usamos uma elipse base
+            const x = Math.cos(angle) * width;
+            const y = Math.sin(angle) * height * 0.5;
             
             points.push({
-              x: centerX + (rx * perpX + ry * (dirX / len)),
-              y: centerY + (rx * perpY + ry * (dirY / len))
+              x: cx + (x * px + y * nx),
+              y: cy + (x * py + y * ny)
+            });
+          }
+          
+          // Lado inferior (cutícula) - mais reto ou suave
+          for (let i = res; i >= 0; i--) {
+            const t = i / res;
+            const angle = t * Math.PI + Math.PI;
+            const x = Math.cos(angle) * width;
+            const y = Math.sin(angle) * height * 0.3; // Cutícula é mais rasa
+            
+            points.push({
+              x: cx + (x * px + y * nx),
+              y: cy + (x * py + y * ny)
             });
           }
 
